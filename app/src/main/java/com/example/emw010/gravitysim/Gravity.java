@@ -130,6 +130,13 @@ public class Gravity extends AppCompatActivity
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+//        //Remove title bar
+//        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+
+        //Remove notification bar
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
         // Get an instance of the SensorManager
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
@@ -138,7 +145,7 @@ public class Gravity extends AppCompatActivity
         initGravityEngine(); // init the App side of the simulation.
 
         // instantiate our simulation view and set it as the activity's content
-         mGravityView = new GravityView(this);
+        mGravityView = new GravityView(this);
         setContentView(mGravityView);
         mDisplayOriginOffset = new DisplayPoint();
 
