@@ -1041,10 +1041,6 @@ public class Gravity extends Activity
         mExcludeGreenColor  = mySharedPreferences.getBoolean("no_green", false);
         mAccelEnabled       = mySharedPreferences.getBoolean("enable_accel_tilt", false);
 
-//        // fixme. put back the preferences
-//        m3dDisplay          = false;
-//        mExcludeGreenColor  = false;
-//        mAccelEnabled       = false;
     }
 
 

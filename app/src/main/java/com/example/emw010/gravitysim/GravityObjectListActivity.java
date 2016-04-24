@@ -17,7 +17,7 @@ public class GravityObjectListActivity extends ListActivity {
         super.onCreate(savedInstanceState);
 
 // fixme
-//        setListAdapter(new ArrayAdapter<String>(this, R.layout.object_list_item, Gravity.myGravityObjectNames));
+        setListAdapter(new ArrayAdapter<String>(this, R.layout.object_list_item, Gravity.myGravityObjectNames));
 
         ListView lv = getListView();
         lv.setTextFilterEnabled(true);
