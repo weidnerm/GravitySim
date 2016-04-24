@@ -449,8 +449,9 @@ public class Gravity extends AppCompatActivity
         {
             String angleText = String.format("%3.1f degs", mViewingAngle);
 
-            canvas.drawText(angleText, mDisplayMetrics.widthPixels - 60,
-                    mDisplayMetrics.heightPixels - 2, mAnglePaint);
+            int orig10Pix = (int)(10*mDisplayScaleFactor);
+            canvas.drawText(angleText, mDisplayMetrics.widthPixels - 6*orig10Pix,
+                    mDisplayMetrics.heightPixels - orig10Pix/4, mAnglePaint);
         }
 
         /**
@@ -462,7 +463,8 @@ public class Gravity extends AppCompatActivity
         {
             String timeText = String.format("%d days", mOnDrawCount);
 
-            canvas.drawText(timeText, 10, 10, mElapsedTimePaint);
+            int orig10Pix = (int)(10*mDisplayScaleFactor);
+            canvas.drawText(timeText, orig10Pix, orig10Pix, mElapsedTimePaint);
         }
 
         /**
