@@ -1,6 +1,7 @@
 package com.example.emw010.gravitysim;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
@@ -122,11 +123,6 @@ public class Gravity extends AppCompatActivity
     float mTextSize;
 
 
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_gravity);
-//    }
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -153,26 +149,26 @@ public class Gravity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         boolean result = super.onCreateOptionsMenu(menu);
 
-//        MenuInflater inflater = getMenuInflater();
-//        inflater.inflate(R.menu.options_menu, menu);
-//
-//        // pref menu item
-//        Intent prefsIntent = new Intent(getApplicationContext(),
-//                GravityPreferencesActivity.class);
-//        MenuItem preferences = menu.findItem(R.id.settings);
-//        preferences.setIntent(prefsIntent);
-//
-//        // object list menu item
-//        Intent objectListIntent = new Intent(getApplicationContext(),
-//                GravityObjectListActivity.class);
-//        MenuItem objectList = menu.findItem(R.id.viewlist);
-//        objectList.setIntent(objectListIntent);
-//
-//        // object list menu item
-//        Intent aboutIntent = new Intent(getApplicationContext(),
-//                GravityAboutActivity.class);
-//        MenuItem aboutMenu = menu.findItem(R.id.about);
-//        aboutMenu.setIntent(aboutIntent);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.options_menu, menu);
+
+        // pref menu item
+        Intent prefsIntent = new Intent(getApplicationContext(),
+                GravityPreferencesActivity.class);
+        MenuItem preferences = menu.findItem(R.id.settings);
+        preferences.setIntent(prefsIntent);
+
+        // object list menu item
+        Intent objectListIntent = new Intent(getApplicationContext(),
+                GravityObjectListActivity.class);
+        MenuItem objectList = menu.findItem(R.id.viewlist);
+        objectList.setIntent(objectListIntent);
+
+        // object list menu item
+        Intent aboutIntent = new Intent(getApplicationContext(),
+                GravityAboutActivity.class);
+        MenuItem aboutMenu = menu.findItem(R.id.about);
+        aboutMenu.setIntent(aboutIntent);
 
         return result;
     }

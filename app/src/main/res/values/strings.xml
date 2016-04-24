@@ -1,3 +1,28 @@
 <resources>
     <string name="app_name">GravitySim</string>
+    <string name="options_3d_title">3D Options</string>
+    <string name="enable_3d">3D Display</string>
+    <string name="enable_3d_summary">Enable Stereo Anaglyph 3D Display</string>
+    <string name="no_green">Disable Green</string>
+    <string name="no_green_summary">Enable if the cyan elements are visible through the red glasses lense.</string>
+    <string name="general_options_title">General Options</string>
+    <string name="accel_enable">Enable Accelerometer</string>
+    <string name="accel_enable_summary">Allow phone tilt orientation to adjust viewing angle.</string>
+    <string name="settings">Settings</string>
+    <string name="object_list">Object List</string>
+    <string name="about">About</string>
+    <string name="credits1">by Michael Weidner</string>
+    <string name="about_physics_title">Physics:</string>
+    <string name="about_physics_0">The program simulates the gravitational interaction of all the bodies in the system.  The system is initialized with a position vector and velocity vector.  The initial position and velocity vectors are set up so the resulting orbit matches the eccentricity, tilt, and rotation of the actual object.</string>
+    <string name="about_physics_1">The program uses vector math to iteratively calculate the gravitational force vector between each pair of objects.  The Force vectors are summed to compute the resultant force vector.</string>
+    <string name="about_physics_2">The force vector for each object is then used with the mass of the object to compute the acceleration vector for each object.</string>
+    <string name="about_physics_3">The force vector for each object is then used with the mass of the object to compute the acceleration vector for each object.</string>
+    <string name="about_physics_4">The acceleration vector for each object is used with the computation time interval to determine the velocity vector change.</string>
+    <string name="about_physics_5">The velocity change vector is added to the object\'s previous velocity to compute the new velocity.  The overall velocity vector for each object is used with the computation time interval to determine the vector associated with the change in position.</string>
+    <string name="about_physics_6">The position change vector is added to the overall position vector to compute the new position vector for the object.</string>
+    <string name="about_physics_7">The last few position vectors are temporarily retained to allow the trail through space to be drawn.</string>
+    <string name="about_physics_8">All vectors are 3D with an x, y, and z component.</string>
+    <string name="about_display_title">3D Display:</string>
+    <string name="about_display_1">The 3D stereo anaglyph display is supported by rendering the system twice.  It is rendered for the left eye using red, and is rendered for the right eye using cyan or blue.  The eye separation and viewing distance constants are currently hard coded in the application.</string>
+    <string name="about_display_2">Most 3D glasses have red for the left eye and cyan (blue/green) for the right.  Some LCD displays have a small amount of green that bleeds into the red.  For these displays, the green component can be disabled via the preferences.  This allows the right eye view to be seen properly without it aliasing into the left eye view.</string>
 </resources>

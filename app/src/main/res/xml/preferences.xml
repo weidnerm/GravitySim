@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="@string/options_3d_title"
+        android:key="3d_options">
+
+        <CheckBoxPreference
+            android:key="enable_3d"
+            android:summary="@string/enable_3d_summary"
+            android:title="@string/enable_3d"
+            android:defaultValue="false"
+            />
+
+        <CheckBoxPreference
+            android:key="no_green"
+            android:summary="@string/no_green_summary"
+            android:title="@string/no_green"
+            android:defaultValue="false"
+            />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/general_options_title"
+        android:key="general_options">
+
+        <CheckBoxPreference
+            android:key="enable_accel_tilt"
+            android:summary="@string/accel_enable_summary"
+            android:title="@string/accel_enable"
+            android:defaultValue="true"
+            />
+
+    </PreferenceCategory>
+</PreferenceScreen>
