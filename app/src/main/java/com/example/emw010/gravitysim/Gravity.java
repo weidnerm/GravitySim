@@ -118,6 +118,8 @@ public class Gravity extends AppCompatActivity
     public boolean mAccelEnabled = true;
     public boolean m3dDisplay = false;
     public SolarSystem mySolarSystem;
+    float mDisplayScaleFactor;
+    float mTextSize;
 
 
 //    @Override
@@ -260,6 +262,7 @@ public class Gravity extends AppCompatActivity
             mElapsedTimePaint = new Paint();
             mElapsedTimePaint.setColor(Color.YELLOW);
 
+
             mLeft3DPaint = new Paint();
             mLeft3DPaint.setColor(0xffff0000);
 
@@ -337,7 +340,15 @@ public class Gravity extends AppCompatActivity
                 mRight3DPaint.setColor(0xff00ffff);
             }
 
-
+            // update paints to scale to display
+            mDisplayScaleFactor = (float)mDisplayMetrics.widthPixels/480.0f;
+            mTextSize = 10*mDisplayScaleFactor;
+            mDistanceScalePaint.setTextSize( mTextSize );
+            mTimeScalePaint.setTextSize( mTextSize );
+            mAnglePaint.setTextSize( mTextSize );
+            mElapsedTimePaint.setTextSize( mTextSize );
+            mLeft3DPaint.setTextSize( mTextSize );
+            mRight3DPaint.setTextSize( mTextSize );
 
 
             // for(objectIndex=0 ; objectIndex<numObjects ; objectIndex++)
@@ -358,7 +369,7 @@ public class Gravity extends AppCompatActivity
                     // Draw the textual name of the object.
                     canvas.drawText(myGravityObjectNames[objectIndex],objectXRightEye + 2, objectY - 2, mRight3DPaint);
 
-                    final int planetRadius = 2;
+                    final int planetRadius = (int)(2*mDisplayScaleFactor);
                     // Draw the Planet
                     mPlanetRect.left = objectX - planetRadius;
                     mPlanetRect.top = objectY - planetRadius;
@@ -478,17 +489,18 @@ public class Gravity extends AppCompatActivity
                 }
             }
 
-            canvas.drawLine(10, mDisplayMetrics.heightPixels-5, 10, mDisplayMetrics.heightPixels-10, mDistanceScalePaint);
-            canvas.drawLine((float)(10+(ONE_AU_METERS*scaleLength/mDisplayScale)), (float)mDisplayMetrics.heightPixels-5,
-                    (float)(10+(ONE_AU_METERS*scaleLength/mDisplayScale)), (float)mDisplayMetrics.heightPixels-10, mDistanceScalePaint);
-            canvas.drawLine(10, (float)mDisplayMetrics.heightPixels-7,
-                    (float)(10+(ONE_AU_METERS*scaleLength/mDisplayScale)), (float)mDisplayMetrics.heightPixels-7, mDistanceScalePaint);
+            int lineSegmentSize = (int)(10*mDisplayScaleFactor);
+            canvas.drawLine(lineSegmentSize, mDisplayMetrics.heightPixels-lineSegmentSize/2, lineSegmentSize, mDisplayMetrics.heightPixels-lineSegmentSize, mDistanceScalePaint);
+            canvas.drawLine((float)(lineSegmentSize+(ONE_AU_METERS*scaleLength/mDisplayScale)), (float)mDisplayMetrics.heightPixels-lineSegmentSize/2,
+                    (float)(lineSegmentSize+(ONE_AU_METERS*scaleLength/mDisplayScale)), (float)mDisplayMetrics.heightPixels-lineSegmentSize, mDistanceScalePaint);
+            canvas.drawLine(lineSegmentSize, (float)mDisplayMetrics.heightPixels-lineSegmentSize*3/4,
+                    (float)(lineSegmentSize+(ONE_AU_METERS*scaleLength/mDisplayScale)), (float)mDisplayMetrics.heightPixels-lineSegmentSize*3/4, mDistanceScalePaint);
 
             scaleText = String.format("%f AU", scaleLength);
     //			scaleText = String.format("%f AU %f", scaleLength,(float)mDisplayScale);
 
-            canvas.drawText(scaleText, (float)(10+(ONE_AU_METERS*scaleLength/mDisplayScale)+10),
-                    (float)mDisplayMetrics.heightPixels-2, mDistanceScalePaint);
+            canvas.drawText(scaleText, (float)(10+(ONE_AU_METERS*scaleLength/mDisplayScale)+lineSegmentSize),
+                    (float)mDisplayMetrics.heightPixels-lineSegmentSize/5, mDistanceScalePaint);
         }
 
 
@@ -525,15 +537,16 @@ public class Gravity extends AppCompatActivity
                 tempVal = 0;
             }
 
+            int orig10Pix = (int)(10*mDisplayScaleFactor);
             scaleText = String.format("%4.1f days/sec", tempVal);
 
-            canvas.drawText(scaleText, (float)displayWidth-100,
-                    (float)10, mTimeScalePaint);
+            canvas.drawText(scaleText, (float)displayWidth-orig10Pix*10,
+                    (float)orig10Pix, mTimeScalePaint);
 
             scaleText = String.format("%2.2f hours/calc", mComputationTimeInterval/(60*60));
 
-            canvas.drawText(scaleText, (float)displayWidth-100,
-                    (float)20, mTimeScalePaint);
+            canvas.drawText(scaleText, (float)displayWidth-orig10Pix*10,
+                    (float)orig10Pix*2, mTimeScalePaint);
         }
 
         public void onSensorChanged(SensorEvent event) {
