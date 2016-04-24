@@ -125,7 +125,6 @@ public class Gravity extends Activity
     public SolarSystem mySolarSystem;
     float mDisplayScaleFactor;
     float mTextSize;
-    String debugText = "";
 
 
     /** Called when the activity is first created. */
@@ -154,7 +153,6 @@ public class Gravity extends Activity
     public boolean onCreateOptionsMenu(Menu menu) {
         boolean result = super.onCreateOptionsMenu(menu);
 
-        debugText = "Menu called";
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.options_menu, menu);
 
@@ -459,8 +457,7 @@ public class Gravity extends Activity
          */
         private void displayElapsedTime(Canvas canvas)
         {
-//            String timeText = String.format("%d days", mOnDrawCount);
-            String timeText = String.format("%d days DEBUG=%s", mOnDrawCount, debugText);
+            String timeText = String.format("%d days", mOnDrawCount);
 
             int orig10Pix = (int)(10*mDisplayScaleFactor);
             canvas.drawText(timeText, orig10Pix, orig10Pix, mElapsedTimePaint);
