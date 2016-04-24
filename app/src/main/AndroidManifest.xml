@@ -15,6 +15,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".GravityPreferencesActivity" />
+
+        <activity android:name=".GravityObjectListActivity" />
+
+        <activity android:name="GravityAboutActivity"  />
+
     </application>
 
 </manifest>

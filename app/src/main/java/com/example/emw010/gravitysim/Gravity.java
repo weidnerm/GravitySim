@@ -1,7 +1,9 @@
 package com.example.emw010.gravitysim;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
@@ -12,12 +14,14 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.*;
 
 
-public class Gravity extends AppCompatActivity
+//public class Gravity extends AppCompatActivity
+public class Gravity extends Activity
 {
     private SensorManager mSensorManager = null;
     private GravityView mGravityView;
@@ -121,6 +125,7 @@ public class Gravity extends AppCompatActivity
     public SolarSystem mySolarSystem;
     float mDisplayScaleFactor;
     float mTextSize;
+    String debugText = "";
 
 
     /** Called when the activity is first created. */
@@ -149,6 +154,7 @@ public class Gravity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         boolean result = super.onCreateOptionsMenu(menu);
 
+        debugText = "Menu called";
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.options_menu, menu);
 
@@ -453,7 +459,8 @@ public class Gravity extends AppCompatActivity
          */
         private void displayElapsedTime(Canvas canvas)
         {
-            String timeText = String.format("%d days", mOnDrawCount);
+//            String timeText = String.format("%d days", mOnDrawCount);
+            String timeText = String.format("%d days DEBUG=%s", mOnDrawCount, debugText);
 
             int orig10Pix = (int)(10*mDisplayScaleFactor);
             canvas.drawText(timeText, orig10Pix, orig10Pix, mElapsedTimePaint);
@@ -1030,17 +1037,17 @@ public class Gravity extends AppCompatActivity
      */
     public void handlePreferences()
     {
-//        SharedPreferences mySharedPreferences;
-//        mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-//
-//        m3dDisplay          = mySharedPreferences.getBoolean("enable_3d", false);
-//        mExcludeGreenColor  = mySharedPreferences.getBoolean("no_green", false);
-//        mAccelEnabled       = mySharedPreferences.getBoolean("enable_accel_tilt", false);
+        SharedPreferences mySharedPreferences;
+        mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        // fixme. put back the preferences
-        m3dDisplay          = false;
-        mExcludeGreenColor  = false;
-        mAccelEnabled       = false;
+        m3dDisplay          = mySharedPreferences.getBoolean("enable_3d", false);
+        mExcludeGreenColor  = mySharedPreferences.getBoolean("no_green", false);
+        mAccelEnabled       = mySharedPreferences.getBoolean("enable_accel_tilt", false);
+
+//        // fixme. put back the preferences
+//        m3dDisplay          = false;
+//        mExcludeGreenColor  = false;
+//        mAccelEnabled       = false;
     }
 
 
