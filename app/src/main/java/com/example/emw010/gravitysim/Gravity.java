@@ -122,6 +122,7 @@ public class Gravity extends Activity
     public boolean mExcludeGreenColor = false;  // allows green to be excluded for displays that bleed green into red.
     public boolean mAccelEnabled = true;
     public boolean m3dDisplay = false;
+    public boolean mSeeGrid = false;
     public SolarSystem mySolarSystem;
     float mDisplayScaleFactor;
     float mTextSize;
@@ -310,6 +311,7 @@ public class Gravity extends Activity
             displayTheViewingAngle(canvas);
             displayTheTimeScale(canvas);
             displayElapsedTime(canvas);
+            displayGrid(canvas);
             displayDebugInformation(canvas);
 
             // Retrieve the size of the drawing area
@@ -461,6 +463,50 @@ public class Gravity extends Activity
 
             int orig10Pix = (int)(10*mDisplayScaleFactor);
             canvas.drawText(timeText, orig10Pix, orig10Pix, mElapsedTimePaint);
+        }
+
+        private void displayGrid(Canvas canvas)
+        {
+            double gridSize = ONE_AU_METERS;
+            int steps = 2;
+            double gridPosition;
+
+            if ( mSeeGrid == true )
+            {
+                for (gridPosition = -gridSize; gridPosition <= gridSize; gridPosition += gridSize / steps) {
+                    DisplayPointPair end_1 = translatePointForDisplay(gridPosition, -gridSize, 0);
+                    DisplayPointPair end_2 = translatePointForDisplay(gridPosition, gridSize, 0);
+
+                    canvas.drawLine(
+                            mDisplayOriginOffset.x + end_1.left_x,
+                            mDisplayOriginOffset.y + end_1.left_y,
+                            mDisplayOriginOffset.x + end_2.left_x,
+                            mDisplayOriginOffset.y + end_2.left_y, mLeft3DPaint);
+                    canvas.drawLine(
+                            mDisplayOriginOffset.x + end_1.right_x,
+                            mDisplayOriginOffset.y + end_1.right_y,
+                            mDisplayOriginOffset.x + end_2.right_x,
+                            mDisplayOriginOffset.y + end_2.right_y, mRight3DPaint);
+
+                }
+                for (gridPosition = -gridSize; gridPosition <= gridSize; gridPosition += gridSize / steps) {
+                    DisplayPointPair end_1 = translatePointForDisplay(-gridSize, gridPosition, 0);
+                    DisplayPointPair end_2 = translatePointForDisplay(gridSize, gridPosition, 0);
+
+                    canvas.drawLine(
+                            mDisplayOriginOffset.x + end_1.left_x,
+                            mDisplayOriginOffset.y + end_1.left_y,
+                            mDisplayOriginOffset.x + end_2.left_x,
+                            mDisplayOriginOffset.y + end_2.left_y, mLeft3DPaint);
+                    canvas.drawLine(
+                            mDisplayOriginOffset.x + end_1.right_x,
+                            mDisplayOriginOffset.y + end_1.right_y,
+                            mDisplayOriginOffset.x + end_2.right_x,
+                            mDisplayOriginOffset.y + end_2.right_y, mRight3DPaint);
+
+                }
+
+            }
         }
 
         /**
@@ -631,8 +677,8 @@ public class Gravity extends Activity
                     break;
                 case MotionEvent.ACTION_UP:
                     mOldDisplayScale = 1;
-    //                	if ( ( Math.abs(x) < 2*CLICK_DISTANCE_PIXELS ) &&
-    //                			( Math.abs(y) < 2*CLICK_DISTANCE_PIXELS ) )
+    //                	if ( ( Math.abs(x) < 2*CLICK_DISTANCE_PIXELS*mDisplayScaleFactor ) &&
+    //                			( Math.abs(y) < 2*CLICK_DISTANCE_PIXELS*mDisplayScaleFactor ) )
     //                 	{
     //                		mDisplayMode = mDisplayMode==DISPLAY_MODE_2D ? DISPLAY_MODE_3D : DISPLAY_MODE_2D;// We have tap of the 2d/3d button.
     //                 	}
@@ -842,10 +888,10 @@ public class Gravity extends Activity
             mCenterObjectIndex = -1;
             for(index=0 ; index<mNumGravityObjects ; index++)
             {
-                if ( ( mDisplayOriginOffset.x+myGravityObjectCoordHistoryLeft[index][0].x > xPos-CLICK_DISTANCE_PIXELS ) &&
-                        ( mDisplayOriginOffset.x+myGravityObjectCoordHistoryLeft[index][0].x < xPos+CLICK_DISTANCE_PIXELS ) &&
-                        ( mDisplayOriginOffset.y+myGravityObjectCoordHistoryLeft[index][0].y > yPos-CLICK_DISTANCE_PIXELS ) &&
-                        ( mDisplayOriginOffset.y+myGravityObjectCoordHistoryLeft[index][0].y < yPos+CLICK_DISTANCE_PIXELS ) )
+                if ( ( mDisplayOriginOffset.x+myGravityObjectCoordHistoryLeft[index][0].x > xPos-CLICK_DISTANCE_PIXELS*mDisplayScaleFactor ) &&
+                        ( mDisplayOriginOffset.x+myGravityObjectCoordHistoryLeft[index][0].x < xPos+CLICK_DISTANCE_PIXELS*mDisplayScaleFactor ) &&
+                        ( mDisplayOriginOffset.y+myGravityObjectCoordHistoryLeft[index][0].y > yPos-CLICK_DISTANCE_PIXELS*mDisplayScaleFactor ) &&
+                        ( mDisplayOriginOffset.y+myGravityObjectCoordHistoryLeft[index][0].y < yPos+CLICK_DISTANCE_PIXELS*mDisplayScaleFactor ) )
                 {
                     // We're within the click range.  find the first object in the click range.
                     mCenterObjectIndex = index;
@@ -970,25 +1016,12 @@ public class Gravity extends Activity
                     zTran -= myGravityObjectVectorHistory[mCenterObjectIndex][0].z;
                 }
 
-                // Rotate the system about the x axis.
-                xRot = xTran;
-                yRot = yTran*cosOfAngle - zTran*sinOfAngle;
-                zRot = yTran*sinOfAngle	+ zTran*cosOfAngle;
+                DisplayPointPair mDisplayPoint = translatePointForDisplay( xTran,  yTran, zTran);
 
-                // Scale it down so that its in approximately display units instead of meters.
-                xRot /= mDisplayScale; // One AU is about 149 pixels.
-                yRot /= mDisplayScale; // One AU is about 149 pixels.
-                zRot /= mDisplayScale; // One AU is about 149 pixels.
-
-                // Do the stereo vision calculation.
-                yTemp = zRot*mFocalPointDistanceMain3DAxis/(mFocalPointDistanceMain3DAxis+yRot);
-                xTempLeft  = ((xRot+eyeSeparation)*mFocalPointDistanceMain3DAxis)/(yRot+mFocalPointDistanceMain3DAxis)-eyeSeparation;
-                xTempRight = ((xRot-eyeSeparation)*mFocalPointDistanceMain3DAxis)/(yRot+mFocalPointDistanceMain3DAxis)+eyeSeparation;
-
-                myGravityObjectCoordHistoryRight[index][tempIndex].x = (int) xTempRight;
-                myGravityObjectCoordHistoryRight[index][tempIndex].y = (int) yTemp;
-                myGravityObjectCoordHistoryLeft[index][tempIndex].x = (int) xTempLeft;
-                myGravityObjectCoordHistoryLeft[index][tempIndex].y = (int) yTemp;
+                myGravityObjectCoordHistoryRight[index][tempIndex].x = mDisplayPoint.right_x;
+                myGravityObjectCoordHistoryRight[index][tempIndex].y = mDisplayPoint.right_y;
+                myGravityObjectCoordHistoryLeft[index][tempIndex].x = mDisplayPoint.left_x;
+                myGravityObjectCoordHistoryLeft[index][tempIndex].y = mDisplayPoint.left_y;
 
             }
 
@@ -1005,29 +1038,58 @@ public class Gravity extends Activity
                 zTran -= myGravityObjectVectorHistory[mCenterObjectIndex][0].z;
             }
 
-            // Rotate the system about the x axis.
-            xRot = xTran;
-            yRot = yTran*cosOfAngle - zTran*sinOfAngle;
-            zRot = yTran*sinOfAngle	+ zTran*cosOfAngle;
+            DisplayPointPair mDisplayPoint = translatePointForDisplay( xTran,  yTran, zTran);
 
-            // Scale it down so that its in approximately display units instead of meters.
-            xRot /= mDisplayScale; // One AU is about 149 pixels.
-            yRot /= mDisplayScale; // One AU is about 149 pixels.
-            zRot /= mDisplayScale; // One AU is about 149 pixels.
-
-            // Do the stereo vision calculation.
-            yTemp = zRot*mFocalPointDistanceMain3DAxis/(mFocalPointDistanceMain3DAxis+yRot);
-            xTempLeft  = ((xRot+eyeSeparation)*mFocalPointDistanceMain3DAxis)/(yRot+mFocalPointDistanceMain3DAxis)-eyeSeparation;
-            xTempRight = ((xRot-eyeSeparation)*mFocalPointDistanceMain3DAxis)/(yRot+mFocalPointDistanceMain3DAxis)+eyeSeparation;
-
-            myGravityObjectShadowRight[index].x = (int) xTempRight;
-            myGravityObjectShadowRight[index].y = (int) yTemp;
-            myGravityObjectShadowLeft[index].x = (int) xTempLeft;
-            myGravityObjectShadowLeft[index].y = (int) yTemp;
+            myGravityObjectShadowRight[index].x = mDisplayPoint.right_x;
+            myGravityObjectShadowRight[index].y = mDisplayPoint.right_y;
+            myGravityObjectShadowLeft[index].x = mDisplayPoint.left_x;
+            myGravityObjectShadowLeft[index].y = mDisplayPoint.left_y;
         }
 
     }
 
+    DisplayPointPair translatePointForDisplay(double xTran, double yTran, double zTran)
+    {
+        double xRot,yRot,zRot;
+        double xTempLeft,xTempRight,yTemp;
+        double sinOfAngle = Math.sin(Math.toRadians(-mViewingAngle));
+        double cosOfAngle = Math.cos(Math.toRadians(-mViewingAngle));
+        double eyeSeparation;
+
+        if ( m3dDisplay )
+        {
+            eyeSeparation = mFocalPointDistance3DEyeSeparation;
+        }
+        else
+        {
+            eyeSeparation = 0;
+            mExcludeGreenColor = false; // force cyan if not 3d.
+        }
+
+        // Rotate the system about the x axis.
+        xRot = xTran;
+        yRot = yTran*cosOfAngle - zTran*sinOfAngle;
+        zRot = yTran*sinOfAngle	+ zTran*cosOfAngle;
+
+        // Scale it down so that its in approximately display units instead of meters.
+        xRot /= mDisplayScale; // One AU is about 149 pixels.
+        yRot /= mDisplayScale; // One AU is about 149 pixels.
+        zRot /= mDisplayScale; // One AU is about 149 pixels.
+
+        // Do the stereo vision calculation.
+        yTemp = zRot*mFocalPointDistanceMain3DAxis/(mFocalPointDistanceMain3DAxis+yRot);
+        xTempLeft  = ((xRot+eyeSeparation)*mFocalPointDistanceMain3DAxis)/(yRot+mFocalPointDistanceMain3DAxis)-eyeSeparation;
+        xTempRight = ((xRot-eyeSeparation)*mFocalPointDistanceMain3DAxis)/(yRot+mFocalPointDistanceMain3DAxis)+eyeSeparation;
+
+        DisplayPointPair mDisplayPointPair = new DisplayPointPair();
+
+        mDisplayPointPair.left_x = (int)xTempLeft;
+        mDisplayPointPair.left_y = (int)yTemp;
+        mDisplayPointPair.right_x = (int)xTempRight;
+        mDisplayPointPair.right_y = (int)yTemp;
+
+        return( mDisplayPointPair);
+    }
 
     /**
      * Fetches the application preferences for use.
@@ -1040,6 +1102,7 @@ public class Gravity extends Activity
         m3dDisplay          = mySharedPreferences.getBoolean("enable_3d", false);
         mExcludeGreenColor  = mySharedPreferences.getBoolean("no_green", false);
         mAccelEnabled       = mySharedPreferences.getBoolean("enable_accel_tilt", false);
+        mSeeGrid           = mySharedPreferences.getBoolean("see_grid", false);
 
     }
 
@@ -1062,6 +1125,15 @@ public class Gravity extends Activity
     class DisplayPoint {
         int x;
         int y;
+    }
+    /**
+     * Class that represents a left and right eye set of points on the display using x,y coordinates.
+     */
+    class DisplayPointPair {
+        public int left_x;
+        public int left_y;
+        public int right_x;
+        public int right_y;
     }
 
 //    static {

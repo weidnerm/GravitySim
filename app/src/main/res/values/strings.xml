@@ -3,6 +3,8 @@
     <string name="options_3d_title">3D Options</string>
     <string name="enable_3d">3D Display</string>
     <string name="enable_3d_summary">Enable Stereo Anaglyph 3D Display</string>
+    <string name="see_grid">Display Grid</string>
+    <string name="see_grid_summary">Display Grid in x-y plane.</string>
     <string name="no_green">Disable Green</string>
     <string name="no_green_summary">Enable if the cyan elements are visible through the red glasses lense.</string>
     <string name="general_options_title">General Options</string>

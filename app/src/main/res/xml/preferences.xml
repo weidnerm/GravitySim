@@ -18,6 +18,13 @@
             android:defaultValue="false"
             />
 
+        <CheckBoxPreference
+            android:key="see_grid"
+            android:summary="@string/see_grid_summary"
+            android:title="@string/see_grid"
+            android:defaultValue="false"
+            />
+
     </PreferenceCategory>
 
     <PreferenceCategory
