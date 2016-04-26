@@ -1,4 +1,4 @@
-package com.example.emw010.myfirstapp;
+package com.example.emw010.gravitysim;
 
 import org.junit.Test;
 import com.example.emw010.gravitysim.*;
