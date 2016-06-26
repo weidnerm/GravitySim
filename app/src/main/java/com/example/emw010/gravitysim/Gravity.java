@@ -220,6 +220,7 @@ public class Gravity extends Activity
         private float mLastAccelerometerX,mLastAccelerometerY,mLastAccelerometerZ = 10000; // some invalid value
         public Paint mLeft3DPaint,mRight3DPaint;
         public Paint mLeft3DShadowPaint,mRight3DShadowPaint;
+        public double mLastScaleLength = 1;
 
 
         /**
@@ -467,7 +468,7 @@ public class Gravity extends Activity
 
         private void displayGrid(Canvas canvas)
         {
-            double gridSize = ONE_AU_METERS;
+            double gridSize = mLastScaleLength;
             int steps = 2;
             double gridPosition;
 
@@ -532,6 +533,7 @@ public class Gravity extends Activity
                     break;
                 }
             }
+            mLastScaleLength = scaleLength*ONE_AU_METERS;
 
             int lineSegmentSize = (int)(10*mDisplayScaleFactor);
             canvas.drawLine(lineSegmentSize, mDisplayMetrics.heightPixels-lineSegmentSize/2, lineSegmentSize, mDisplayMetrics.heightPixels-lineSegmentSize, mDistanceScalePaint);
