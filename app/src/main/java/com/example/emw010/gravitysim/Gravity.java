@@ -387,17 +387,38 @@ public class Gravity extends Activity
                     {
                         for(int histIndex=0; histIndex<myGravityObjectCoordHistoryDepth-1 ; histIndex++)
                         {
-                            canvas.drawLine(mDisplayOriginOffset.x + myGravityObjectCoordHistoryLeft[objectIndex][histIndex].x,
-                                    mDisplayOriginOffset.y + myGravityObjectCoordHistoryLeft[objectIndex][histIndex].y,
-                                    mDisplayOriginOffset.x + myGravityObjectCoordHistoryLeft[objectIndex][histIndex+1].x,
-                                    mDisplayOriginOffset.y + myGravityObjectCoordHistoryLeft[objectIndex][histIndex+1].y,
-                                    mLeft3DPaint);
-                            canvas.drawLine(mDisplayOriginOffset.x + myGravityObjectCoordHistoryRight[objectIndex][histIndex].x,
-                                    mDisplayOriginOffset.y + myGravityObjectCoordHistoryRight[objectIndex][histIndex].y,
-                                    mDisplayOriginOffset.x + myGravityObjectCoordHistoryRight[objectIndex][histIndex+1].x,
-                                    mDisplayOriginOffset.y + myGravityObjectCoordHistoryRight[objectIndex][histIndex+1].y,
-                                    mRight3DPaint);
+                            int leftX0 = mDisplayOriginOffset.x + myGravityObjectCoordHistoryLeft[objectIndex][histIndex].x ;
+                            int leftY0 = mDisplayOriginOffset.y + myGravityObjectCoordHistoryLeft[objectIndex][histIndex].y ;
+                            int leftX1 = mDisplayOriginOffset.x + myGravityObjectCoordHistoryLeft[objectIndex][histIndex+1].x;
+                            int leftY1 = mDisplayOriginOffset.y + myGravityObjectCoordHistoryLeft[objectIndex][histIndex+1].y;
 
+                            int rightX0 = mDisplayOriginOffset.x + myGravityObjectCoordHistoryRight[objectIndex][histIndex].x;
+                            int rightY0 = mDisplayOriginOffset.y + myGravityObjectCoordHistoryRight[objectIndex][histIndex].y;
+                            int rightX1 = mDisplayOriginOffset.x + myGravityObjectCoordHistoryRight[objectIndex][histIndex+1].x;
+                            int rightY1 = mDisplayOriginOffset.y + myGravityObjectCoordHistoryRight[objectIndex][histIndex+1].y;
+
+                            if (
+                               (extremeTop  < leftX0  ) && (leftX0  < extremeBottom ) &&
+                               (extremeLeft < leftY0  ) && (leftY0  < extremeRight ) &&
+                               (extremeTop  < leftX1  ) && (leftX1  < extremeBottom ) &&
+                               (extremeLeft < leftY1  ) && (leftY1  < extremeRight ) &&
+
+                               (extremeTop  < rightX0 ) && (rightX0 < extremeBottom ) &&
+                               (extremeLeft < rightY0 ) && (rightY0 < extremeRight ) &&
+                               (extremeTop  < rightX1 ) && (rightX1 < extremeBottom ) &&
+                               (extremeLeft < rightY1 ) && (rightY1 < extremeRight ) )
+                            {
+                                canvas.drawLine(leftX0,
+                                        leftY0,
+                                        leftX1,
+                                        leftY1,
+                                        mLeft3DPaint);
+                                canvas.drawLine(rightX0,
+                                        rightY0,
+                                        rightX1,
+                                        rightY1,
+                                        mRight3DPaint);
+                            }
 
                         }
                     }
@@ -636,7 +657,13 @@ public class Gravity extends Activity
 
             if ( mAccelEnabled )
             {
-                mViewingAngle = 90 - Math.toDegrees( Math.atan2(mAccelerometerY,mAccelerometerZ) ) ;
+                double newViewingAngle = 90 - Math.toDegrees( Math.atan2(mAccelerometerY,mAccelerometerZ) );
+
+                if (( newViewingAngle-mViewingAngle)/mViewingAngle > .1 )
+                {
+                    mViewingAngle = newViewingAngle;  // if they tilt fast, just go with it.
+                }
+                mViewingAngle = mViewingAngle*.9 + newViewingAngle*.10 ;
             }
 
             mLastAccelerometerX = mAccelerometerX;
