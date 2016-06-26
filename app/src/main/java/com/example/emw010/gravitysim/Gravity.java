@@ -8,6 +8,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.DashPathEffect;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -263,9 +265,11 @@ public class Gravity extends Activity
 
             mLeft3DPaint = new Paint();
             mLeft3DPaint.setColor(0xffff0000);
+            mLeft3DPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.ADD));
 
             mRight3DPaint = new Paint();
             mRight3DPaint.setColor(0xff00ffff);
+            mRight3DPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.ADD));
 
             // set up paint for the dashed line drawn to plane of ecliptic
             mLeft3DShadowPaint = new Paint();
