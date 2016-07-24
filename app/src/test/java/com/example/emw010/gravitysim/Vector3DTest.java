@@ -165,7 +165,7 @@ public class Vector3DTest {
         assertEquals(0, myvectorA.y, 0.000000000000001 );
         assertEquals(0, myvectorA.z, 0.000000000000001 );
 
-        myvectorA.dump(1);
+//        myvectorA.dump(1);
     }
 
 
