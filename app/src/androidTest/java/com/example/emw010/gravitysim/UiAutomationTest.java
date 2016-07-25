@@ -14,7 +14,7 @@ import android.content.pm.ResolveInfo;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SdkSuppress;
 import android.support.test.runner.AndroidJUnit4;
-import android.support.test.uiautomator.By;
+import android.support.test.uiautomator.*;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject2;
 import android.support.test.uiautomator.Until;
@@ -65,6 +65,25 @@ public class UiAutomationTest {
     @Test
     public void checkPreconditions() {
         assertThat(mDevice, notNullValue());
+    }
+
+    @Test
+    public void testMenuButton()
+    {
+        mDevice.pressMenu();
+        
+        UiObject aboutButton = mDevice.findObject(new UiSelector()
+                .text("About"));
+        assertThat(aboutButton, notNullValue());
+
+        UiObject settingsButton = mDevice.findObject(new UiSelector()
+                .text("Settings"));
+        assertThat(settingsButton, notNullValue());
+
+        UiObject objectListButton = mDevice.findObject(new UiSelector()
+                .text("Object List"));
+        assertThat(objectListButton, notNullValue());
+
     }
 
 //    @Test
