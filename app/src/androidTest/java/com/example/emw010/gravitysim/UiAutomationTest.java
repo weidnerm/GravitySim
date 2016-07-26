@@ -115,6 +115,27 @@ public class UiAutomationTest {
         assertThat("GravitySim", is(equalTo(changedText.getText())));
     }
 
+    @Test
+    public void testObjectListButton()
+    {
+        mDevice.pressMenu();
+
+        UiObject aboutButton = mDevice.findObject(new UiSelector()
+                .text("Object List"));
+        assertThat(aboutButton, notNullValue());
+        assertEquals( true, aboutButton.exists() );
+
+        try {
+            aboutButton.click();
+        }
+        catch(UiObjectNotFoundException e) {
+            fail();
+        }
+        UiObject2 changedText = mDevice.wait(Until.findObject(By.res(BASIC_SAMPLE_PACKAGE, "content")),500 /* wait 500ms */);
+        assertThat(changedText, notNullValue());
+//        assertThat("GravitySim", is(equalTo(changedText.getText())));
+    }
+
 //    @Test
 //    public void testChangeText_newActivity() {
 //        // Type text and then press the button.
