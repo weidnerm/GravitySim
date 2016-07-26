@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Rect;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SdkSuppress;
 import android.support.test.runner.AndroidJUnit4;
@@ -22,7 +23,11 @@ import android.support.test.uiautomator.Until;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+
+import org.junit.Test;
 
 
 @RunWith(AndroidJUnit4.class)
@@ -71,35 +76,44 @@ public class UiAutomationTest {
     public void testMenuButton()
     {
         mDevice.pressMenu();
-        
+
         UiObject aboutButton = mDevice.findObject(new UiSelector()
                 .text("About"));
         assertThat(aboutButton, notNullValue());
+        assertEquals( true, aboutButton.exists() );
 
         UiObject settingsButton = mDevice.findObject(new UiSelector()
                 .text("Settings"));
         assertThat(settingsButton, notNullValue());
+        assertEquals( true, settingsButton.exists() );
 
         UiObject objectListButton = mDevice.findObject(new UiSelector()
                 .text("Object List"));
         assertThat(objectListButton, notNullValue());
+        assertEquals( true, objectListButton.exists() );
 
     }
 
-//    @Test
-//    public void testChangeText_sameActivity() {
-//        // Type text and then press the button.
-//        mDevice.findObject(By.res(BASIC_SAMPLE_PACKAGE, "editTextUserInput"))
-//                .setText(STRING_TO_BE_TYPED);
-//        mDevice.findObject(By.res(BASIC_SAMPLE_PACKAGE, "changeTextBt"))
-//                .click();
-//
-//        // Verify the test is displayed in the Ui
-//        UiObject2 changedText = mDevice
-//                .wait(Until.findObject(By.res(BASIC_SAMPLE_PACKAGE, "textToBeChanged")),
-//                        500 /* wait 500ms */);
-//        assertThat(changedText.getText(), is(equalTo(STRING_TO_BE_TYPED)));
-//    }
+    @Test
+    public void testAboutButton()
+    {
+        mDevice.pressMenu();
+
+        UiObject aboutButton = mDevice.findObject(new UiSelector()
+                .text("About"));
+        assertThat(aboutButton, notNullValue());
+        assertEquals( true, aboutButton.exists() );
+
+        try {
+            aboutButton.click();
+        }
+        catch(UiObjectNotFoundException e) {
+            fail();
+        }
+        UiObject2 changedText = mDevice.wait(Until.findObject(By.res(BASIC_SAMPLE_PACKAGE, "textView1")),500 /* wait 500ms */);
+        assertThat(changedText, notNullValue());
+        assertThat("GravitySim", is(equalTo(changedText.getText())));
+    }
 
 //    @Test
 //    public void testChangeText_newActivity() {

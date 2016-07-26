@@ -3,10 +3,15 @@ package com.example.emw010.gravitysim;
 //import static org.junit.Assert.*;
 import android.app.Application;
 import android.test.ApplicationTestCase;
+import android.support.test.runner.AndroidJUnit4;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * Created by emw010 on 7/24/16.
  */
+@RunWith(AndroidJUnit4.class)
 public class AppGravityObjectTest extends ApplicationTestCase<Application> {
         public AppGravityObjectTest() {
             super(Application.class);
@@ -41,6 +46,7 @@ public class AppGravityObjectTest extends ApplicationTestCase<Application> {
         assertEquals(1000, myGravityObjectA.m_mass, 1e-14 );
     }
 
+    @Test
     public void test_GravityObject_relative() throws Exception
     {
         GravityObject myGravityObjectA = new GravityObject(
