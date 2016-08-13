@@ -16,7 +16,7 @@ public class AppGravityObjectTest extends ApplicationTestCase<Application> {
         public AppGravityObjectTest() {
             super(Application.class);
         }
-//    @Test
+    @Test
     public void test_GravityObject() throws Exception
     {
         GravityObject myGravityObjectA = new GravityObject(

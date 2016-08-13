@@ -149,7 +149,7 @@ public class UiAutomationTest {
     }
 
     @Test
-    public void testObjectSettingsButton() throws UiObjectNotFoundException {
+    public void testObjectSettingsButton() throws UiObjectNotFoundException, InterruptedException {
         mDevice.pressMenu();
 
         UiObject aboutButton = mDevice.findObject(new UiSelector()
@@ -187,6 +187,7 @@ public class UiAutomationTest {
         assertThat(myCheckbox0, notNullValue());
         assertEquals(m3dDisplay,myCheckbox0.isChecked());  // make sure preference match gui
         myCheckbox0.click();
+        Thread.sleep(1000);
         assertEquals(m3dDisplay,mySharedPreferences.getBoolean("enable_3d", false) ? false: true);  // make sure preference is toggled
         myCheckbox0.click();   // put it back to the original state
 
@@ -288,3 +289,38 @@ public class UiAutomationTest {
         return resolveInfo.activityInfo.packageName;
     }
 }
+
+/*
+tests to do
+
+test landscape vs portrait
+
+normal stuff
+	adjust time scale
+	adjust adjust viewing angle
+		slider
+		accelerometer
+	adjust zoom scale
+	new origin
+		background
+		object
+
+	3d on/off
+	green on/off
+	accel on/off
+	grid on/off
+
+	short slide (considered a tap)
+
+	menu - ovearll
+	menu - about
+	menu - object list
+	menu - settings
+
+abnormal stuff
+	swipe in center
+	diagonal swipe(left, center, right)
+
+
+
+ */
