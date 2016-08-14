@@ -242,6 +242,12 @@ public class Gravity extends Activity
         private double mComputationIntervalDisplayed = 0;
         Rect mComputationIntervalBounds = new Rect();
 
+        private int mDistanceScaleBarLength = 0;
+        Rect mDistanceScaleBarBounds = new Rect();
+
+        private double mDistanceScaleAuForDisplay = 0;
+        Rect mDistanceScaleTextBounds = new Rect();
+
         /**
          * Custom view that is used to represent the gravity simulation graphical
          * output area.
@@ -588,17 +594,26 @@ public class Gravity extends Activity
             mLastScaleLength = scaleLength*ONE_AU_METERS;
 
             int lineSegmentSize = (int)(10*mDisplayScaleFactor);
-            canvas.drawLine(lineSegmentSize, mDisplayMetrics.heightPixels-lineSegmentSize/2, lineSegmentSize, mDisplayMetrics.heightPixels-lineSegmentSize, mDistanceScalePaint);
-            canvas.drawLine((float)(lineSegmentSize+(ONE_AU_METERS*scaleLength/mDisplayScale)), (float)mDisplayMetrics.heightPixels-lineSegmentSize/2,
-                    (float)(lineSegmentSize+(ONE_AU_METERS*scaleLength/mDisplayScale)), (float)mDisplayMetrics.heightPixels-lineSegmentSize, mDistanceScalePaint);
-            canvas.drawLine(lineSegmentSize, (float)mDisplayMetrics.heightPixels-lineSegmentSize*3/4,
-                    (float)(lineSegmentSize+(ONE_AU_METERS*scaleLength/mDisplayScale)), (float)mDisplayMetrics.heightPixels-lineSegmentSize*3/4, mDistanceScalePaint);
+            int bottomEdge = mDisplayMetrics.heightPixels-lineSegmentSize/2;
+            int topEdge    = mDisplayMetrics.heightPixels-lineSegmentSize;
+            int middle     = (topEdge+bottomEdge)/2;
+            int leftEdge   = lineSegmentSize;
+            int rightEdge  = (int)(lineSegmentSize+(ONE_AU_METERS*scaleLength/mDisplayScale));
+            canvas.drawLine(leftEdge, topEdge, leftEdge, bottomEdge, mDistanceScalePaint);
+            canvas.drawLine(rightEdge, topEdge,rightEdge, bottomEdge, mDistanceScalePaint);
+            canvas.drawLine(leftEdge, middle,rightEdge, middle, mDistanceScalePaint);
+            mDistanceScaleBarBounds.set(leftEdge-lineSegmentSize/4,topEdge-10,rightEdge+lineSegmentSize/4,bottomEdge+lineSegmentSize/4);
+            mDistanceScaleBarLength = rightEdge-leftEdge;
 
             scaleText = String.format("%f AU", scaleLength);
-    //			scaleText = String.format("%f AU %f", scaleLength,(float)mDisplayScale);
+            mDistanceScaleAuForDisplay = scaleLength;
 
-            canvas.drawText(scaleText, (float)(10+(ONE_AU_METERS*scaleLength/mDisplayScale)+lineSegmentSize),
-                    (float)mDisplayMetrics.heightPixels-lineSegmentSize/5, mDistanceScalePaint);
+            int textX = (int)(10+(ONE_AU_METERS*scaleLength/mDisplayScale)+lineSegmentSize);
+            int textY = (int)(mDisplayMetrics.heightPixels-lineSegmentSize/5);
+            canvas.drawText(scaleText, textX, textY, mDistanceScalePaint);
+
+            mDistanceScalePaint.getTextBounds(scaleText,0,scaleText.length(),mDistanceScaleTextBounds);
+            mDistanceScaleTextBounds.offset(textX, textY);
         }
 
 
@@ -980,9 +995,73 @@ public class Gravity extends Activity
 //            return super.dispatchHoverEvent(event);
 //        }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //
+        // Gravity Accessibility Helper
+        //
+
         private class GravityAccessHelper extends ExploreByTouchHelper
         {
-//            private final Rect mTempParentBounds = new Rect();
+            final public int VIRTUAL_VIEW_ID_ELAPSED_TIME    =  0; // 0	elapsed time
+            final public int VIRTUAL_VIEW_ID_SIMULATION_RATE =  10; // 10	days/sec indicator
+            final public int VIRTUAL_VIEW_ID_CALC_INTERVAL   =  12; // 12	hours/calc indicator
+            final public int VIRTUAL_VIEW_ID_DIST_SCALE_BAR  =  20; // 20	scale bar
+            final public int VIRTUAL_VIEW_ID_DIST_SCALE_TEXT =  22; // 22	scale text
+            final public int VIRTUAL_VIEW_ID_VIEWING_ANGLE =  30; // 30	viewing angle
+//            final public int VIRTUAL_VIEW_ID_xx =  40; // 40	hours per calc slider
+//            final public int VIRTUAL_VIEW_ID_xx =  50; // 50	viewing angle slider
+//            final public int VIRTUAL_VIEW_ID_xx =  60; // 60	distance scale slider
+            final public int VIRTUAL_VIEW_ID_VERT1_GRID_LEYE  =  70; // 70	first vert gridline lefteye
+            final public int VIRTUAL_VIEW_ID_VERT2_GRID_LEYE  =  71; // ..
+            final public int VIRTUAL_VIEW_ID_VERT3_GRID_LEYE  =  72; // ..
+            final public int VIRTUAL_VIEW_ID_VERT4_GRID_LEYE  =  73; // ..
+            final public int VIRTUAL_VIEW_ID_VERT5_GRID_LEYE  =  74; // 74	last vert gridline lefteye
+            final public int VIRTUAL_VIEW_ID_HORIZ1_GRID_LEYE =  75; // 75	first horiz gridline lefteye
+            final public int VIRTUAL_VIEW_ID_HORIZ2_GRID_LEYE =  76; // ..
+            final public int VIRTUAL_VIEW_ID_HORIZ3_GRID_LEYE =  77; // ..
+            final public int VIRTUAL_VIEW_ID_HORIZ4_GRID_LEYE =  78; // ..
+            final public int VIRTUAL_VIEW_ID_HORIZ5_GRID_LEYE =  79; // 79	last horiz gridline lefteye
+            final public int VIRTUAL_VIEW_ID_VERT1_GRID_REYE  =  80; // 80	first vert gridline righteye
+            final public int VIRTUAL_VIEW_ID_VERT2_GRID_REYE  =  81; // ..
+            final public int VIRTUAL_VIEW_ID_VERT3_GRID_REYE  =  82; // ..
+            final public int VIRTUAL_VIEW_ID_VERT4_GRID_REYE  =  83; // ..
+            final public int VIRTUAL_VIEW_ID_VERT5_GRID_REYE  =  84; // 84	last vert gridline righteye
+            final public int VIRTUAL_VIEW_ID_HORIZ1_GRID_REYE =  85; // 85	first horiz gridline righteye
+            final public int VIRTUAL_VIEW_ID_HORIZ2_GRID_REYE =  86; // ..
+            final public int VIRTUAL_VIEW_ID_HORIZ3_GRID_REYE =  87; //..
+            final public int VIRTUAL_VIEW_ID_HORIZ4_GRID_REYE =  88; // ..
+            final public int VIRTUAL_VIEW_ID_HORIZ5_GRID_REYE =  89; // 89	last horiz gridline righteye
+//            final public int VIRTUAL_VIEW_ID_xx =
+//            final public int VIRTUAL_VIEW_ID_xx =  99; // 99	background click	name/click
+//            virtualViewIds.add(100); // 100+10n+0 - object n left		name/click
+//            virtualViewIds.add(101); // 100+10n+1 - object n right		name
+
 
             public GravityAccessHelper(View parentView)
             {
@@ -998,21 +1077,25 @@ public class Gravity extends Activity
 //                if (index >= 0) {
 //                    return index;
 //                }
-                    if (mElapsedTimeTextBounds.contains((int)x,(int)y))          return 0;
-                    else if (mSimulationRateBounds.contains((int)x,(int)y))      return 10;
-                    else if (mComputationIntervalBounds.contains((int)x,(int)y)) return 12;
+                    if (mElapsedTimeTextBounds.contains((int)x,(int)y))          return VIRTUAL_VIEW_ID_ELAPSED_TIME;
+                    else if (mSimulationRateBounds.contains((int)x,(int)y))      return VIRTUAL_VIEW_ID_SIMULATION_RATE;
+                    else if (mComputationIntervalBounds.contains((int)x,(int)y)) return VIRTUAL_VIEW_ID_CALC_INTERVAL;
+                    else if (mDistanceScaleBarBounds.contains((int)x,(int)y))    return VIRTUAL_VIEW_ID_DIST_SCALE_BAR;
+                    else if (mDistanceScaleTextBounds.contains((int)x,(int)y))   return VIRTUAL_VIEW_ID_DIST_SCALE_TEXT;
                     else return ExploreByTouchHelper.HOST_ID;
                 }
             }
 
+
+
             @Override
             protected void getVisibleVirtualViews(List<Integer> virtualViewIds)
             {
-                virtualViewIds.add(0); // 0	elapsed time
-                virtualViewIds.add(10); // 10	days/sec indicator
-                virtualViewIds.add(12); // 12	hours/calc indicator
-//                virtualViewIds.add(20); // 20	scale bar
-//                virtualViewIds.add(22); // 22	scale text
+                virtualViewIds.add(VIRTUAL_VIEW_ID_DIST_SCALE_BAR); // 20	scale bar
+                virtualViewIds.add(VIRTUAL_VIEW_ID_ELAPSED_TIME); // 0	elapsed time
+                virtualViewIds.add(VIRTUAL_VIEW_ID_SIMULATION_RATE); // 10	days/sec indicator
+                virtualViewIds.add(VIRTUAL_VIEW_ID_CALC_INTERVAL); // 12	hours/calc indicator
+                virtualViewIds.add(VIRTUAL_VIEW_ID_DIST_SCALE_TEXT); // 22	scale text
 //                virtualViewIds.add(30); // 30	viewing angle
 //                virtualViewIds.add(40); // 40	hours per calc slider
 //                virtualViewIds.add(50); // 50	viewing angle slider
@@ -1049,14 +1132,20 @@ public class Gravity extends Activity
 
                 switch(index)
                 {
-                    case 0:
+                    case VIRTUAL_VIEW_ID_ELAPSED_TIME:
                         returnVal = getContext().getString(R.string.desc_elapsed_days, (int)mElapsedTimeDisplayed);
                         break;
-                    case 10:
+                    case VIRTUAL_VIEW_ID_SIMULATION_RATE:
                         returnVal = getContext().getString(R.string.desc_simulation_rate, mSimulationRate);
                         break;
-                    case 12:
+                    case VIRTUAL_VIEW_ID_CALC_INTERVAL:
                         returnVal = getContext().getString(R.string.desc_computation_interval, mComputationIntervalDisplayed);
+                        break;
+                    case VIRTUAL_VIEW_ID_DIST_SCALE_BAR:
+                        returnVal = getContext().getString(R.string.desc_distance_scale_bar, mDistanceScaleBarLength);
+                        break;
+                    case VIRTUAL_VIEW_ID_DIST_SCALE_TEXT:
+                        returnVal = getContext().getString(R.string.desc_distance_scale_text, mDistanceScaleAuForDisplay);
                         break;
                     default:
                         returnVal = getContext().getString(R.string.desc_unknown_field);
@@ -1094,14 +1183,20 @@ public class Gravity extends Activity
 
                 switch(index)
                 {
-                    case 0:
+                    case VIRTUAL_VIEW_ID_ELAPSED_TIME:
                         returnVal = mElapsedTimeTextBounds;
                         break;
-                    case 10:
+                    case VIRTUAL_VIEW_ID_SIMULATION_RATE:
                         returnVal = mSimulationRateBounds;
                         break;
-                    case 12:
+                    case VIRTUAL_VIEW_ID_CALC_INTERVAL:
                         returnVal = mComputationIntervalBounds;
+                        break;
+                    case VIRTUAL_VIEW_ID_DIST_SCALE_BAR:
+                        returnVal = mDistanceScaleBarBounds;
+                        break;
+                    case VIRTUAL_VIEW_ID_DIST_SCALE_TEXT:
+                        returnVal = mDistanceScaleTextBounds;
                         break;
                     default:
                         returnVal = new Rect(0,0,0,0);
