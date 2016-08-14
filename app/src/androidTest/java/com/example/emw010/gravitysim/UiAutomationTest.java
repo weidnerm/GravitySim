@@ -237,7 +237,34 @@ public class UiAutomationTest {
         assertNotEquals( secondTime, firstTime );
         assertEquals( "days", scanner2.next() );
 
+        Rect bounds = elapsedText.getVisibleBounds();
+        assertNotEquals(0, bounds.left);
+        assert(bounds.left < bounds.right);
+        assertNotEquals(0, bounds.top);
+        assert(bounds.top < bounds.bottom);
+    }
 
+    @Test
+    public void testSimulationRate() throws UiObjectNotFoundException, InterruptedException {
+
+        UiObject elapsedText = mDevice.findObject(new UiSelector()
+                .descriptionContains("simulation rate"));
+        assertThat(elapsedText, notNullValue());
+
+        Scanner scanner = new Scanner( elapsedText.getContentDescription() );
+        assertEquals( "simulation", scanner.next() );
+        assertEquals( "rate", scanner.next() );
+        float firstTime = scanner.nextFloat();
+        assertNotEquals( 0, firstTime );
+        assertEquals( "days", scanner.next() );
+        assertEquals( "per", scanner.next() );
+        assertEquals( "second", scanner.next() );
+
+        Rect bounds = elapsedText.getVisibleBounds();
+        assertNotEquals(0, bounds.left);
+        assert(bounds.left < bounds.right);
+        assertNotEquals(0, bounds.top);
+        assert(bounds.top < bounds.bottom);
     }
 
     //    @Test

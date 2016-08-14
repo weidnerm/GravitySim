@@ -3,12 +3,15 @@
     <item android:id="@+id/settings"
         android:icon="@drawable/actionsettings"
         android:title="@string/settings" />
+    android:focusable="true"
 
     <item android:id="@+id/viewlist"
         android:icon="@drawable/collectionsviewaslist"
         android:title="@string/object_list" />
+        android:focusable="true"
 
     <item android:id="@+id/about"
         android:icon="@drawable/actionabout"
         android:title="@string/about" />
+        android:focusable="true"
 </menu>

@@ -239,6 +239,9 @@ public class Gravity extends Activity
         private double mSimulationRate = 0;
         Rect mSimulationRateBounds = new Rect();
 
+        private double mComputationIntervalDisplayed = 0;
+        Rect mComputationIntervalBounds = new Rect();
+
         /**
          * Custom view that is used to represent the gravity simulation graphical
          * output area.
@@ -314,6 +317,7 @@ public class Gravity extends Activity
             // Set up accessibility helper class.
             mGravityAccessHelper = new GravityAccessHelper(this);
             ViewCompat.setAccessibilityDelegate(this, mGravityAccessHelper);
+            setFocusable(true);
 
         }
 
@@ -510,6 +514,8 @@ public class Gravity extends Activity
             int orig10Pix = (int)(10*mDisplayScaleFactor);
             canvas.drawText(timeText, orig10Pix, orig10Pix, mElapsedTimePaint);
             mElapsedTimePaint.getTextBounds(timeText,0,timeText.length(),mElapsedTimeTextBounds);
+            mElapsedTimeTextBounds.offset(orig10Pix,orig10Pix);
+//            mGravityAccessHelper.invalidateVirtualView(0);
         }
 
         private void displayGrid(Canvas canvas)
@@ -631,14 +637,22 @@ public class Gravity extends Activity
             int orig10Pix = (int)(10*mDisplayScaleFactor);
             scaleText = String.format("%4.1f days/sec", mSimulationRate);
 
-            canvas.drawText(scaleText, (float)displayWidth-orig10Pix*10,
-                    (float)orig10Pix, mTimeScalePaint);
-
-            scaleText = String.format("%2.2f hours/calc", mComputationTimeInterval/(60*60));
-
-            canvas.drawText(scaleText, (float)displayWidth-orig10Pix*10,
-                    (float)orig10Pix*2, mTimeScalePaint);
+            int displayX = (int)(displayWidth-orig10Pix*10);
+            int displayY = (int)(orig10Pix);
+            canvas.drawText(scaleText, displayX,
+                    displayY, mTimeScalePaint);
             mTimeScalePaint.getTextBounds(scaleText,0,scaleText.length(),mSimulationRateBounds);
+            mSimulationRateBounds.offset(displayX, displayY);
+
+            mComputationIntervalDisplayed = mComputationTimeInterval/(60*60);
+            scaleText = String.format("%2.2f hours/calc", mComputationIntervalDisplayed);
+
+            displayX = (int)(displayWidth-orig10Pix*10);
+            displayY = (int)(orig10Pix*2);
+            mTimeScalePaint.getTextBounds(scaleText,0,scaleText.length(),mComputationIntervalBounds);
+            mComputationIntervalBounds.offset(displayX, displayY);
+            canvas.drawText(scaleText, displayX, displayY, mTimeScalePaint);
+
 
         }
 
@@ -955,6 +969,17 @@ public class Gravity extends Activity
             }
         }
 
+//        @Override
+//        public boolean dispatchHoverEvent(MotionEvent event) {
+//            // Always attempt to dispatch hover events to accessibility first.
+//            if (mGravityAccessHelper != null)
+//            {
+//                return mGravityAccessHelper.dispatchHoverEvent(event);
+//            }
+//
+//            return super.dispatchHoverEvent(event);
+//        }
+
         private class GravityAccessHelper extends ExploreByTouchHelper
         {
 //            private final Rect mTempParentBounds = new Rect();
@@ -973,8 +998,10 @@ public class Gravity extends Activity
 //                if (index >= 0) {
 //                    return index;
 //                }
-
-                    return ExploreByTouchHelper.INVALID_ID;
+                    if (mElapsedTimeTextBounds.contains((int)x,(int)y))          return 0;
+                    else if (mSimulationRateBounds.contains((int)x,(int)y))      return 10;
+                    else if (mComputationIntervalBounds.contains((int)x,(int)y)) return 12;
+                    else return ExploreByTouchHelper.HOST_ID;
                 }
             }
 
@@ -983,7 +1010,7 @@ public class Gravity extends Activity
             {
                 virtualViewIds.add(0); // 0	elapsed time
                 virtualViewIds.add(10); // 10	days/sec indicator
-//                virtualViewIds.add(12); // 12	hours/calc indicator
+                virtualViewIds.add(12); // 12	hours/calc indicator
 //                virtualViewIds.add(20); // 20	scale bar
 //                virtualViewIds.add(22); // 22	scale text
 //                virtualViewIds.add(30); // 30	viewing angle
@@ -1028,6 +1055,9 @@ public class Gravity extends Activity
                     case 10:
                         returnVal = getContext().getString(R.string.desc_simulation_rate, mSimulationRate);
                         break;
+                    case 12:
+                        returnVal = getContext().getString(R.string.desc_computation_interval, mComputationIntervalDisplayed);
+                        break;
                     default:
                         returnVal = getContext().getString(R.string.desc_unknown_field);
                         break;
@@ -1037,7 +1067,8 @@ public class Gravity extends Activity
             }
 
             @Override
-            protected void onPopulateEventForVirtualView(int virtualViewId, AccessibilityEvent event) {
+            protected void onPopulateEventForVirtualView(int virtualViewId, AccessibilityEvent event)
+            {
                 final CharSequence desc = getDescriptionForIndex(virtualViewId);
                 event.setContentDescription(desc);
             }
@@ -1047,9 +1078,9 @@ public class Gravity extends Activity
             {
 //                switch (action)
 //                {
-//                    case AccessibilityNodeInfoCompat.ACTION_CLICK:
+//                    case AccessibilityNodeInfoCompat.ACTION_FOCUS:
 //                        // Click handling should be consistent with onTouchEvent().
-//                        onBarClicked(virtualViewId);
+////                        onBarClicked(virtualViewId);
 //                        return true;
 //                }
 
@@ -1069,6 +1100,9 @@ public class Gravity extends Activity
                     case 10:
                         returnVal = mSimulationRateBounds;
                         break;
+                    case 12:
+                        returnVal = mComputationIntervalBounds;
+                        break;
                     default:
                         returnVal = new Rect(0,0,0,0);
                         break;
@@ -1082,18 +1116,20 @@ public class Gravity extends Activity
             }
 
             @Override
-            protected void onPopulateNodeForVirtualView(
-                    int virtualViewId, AccessibilityNodeInfoCompat node) {
+            protected void onPopulateNodeForVirtualView( int virtualViewId, AccessibilityNodeInfoCompat node)
+            {
                 // Node and event descriptions are usually identical.
                 final CharSequence desc = getDescriptionForIndex(virtualViewId);
                 node.setContentDescription(desc);
 
 //                // Since the user can tap a bar, add the CLICK action.
-//                node.addAction(AccessibilityNodeInfoCompat.ACTION_CLICK);
+//                node.addAction(AccessibilityNodeInfoCompat.ACTION_FOCUS);
 
                 // Reported bounds should be consistent with onDraw().
                 final Rect bounds = getBoundsForIndex(virtualViewId, null);
                 node.setBoundsInParent(bounds);
+                node.setFocusable(true);
+//                node.setEnabled(true);
             }
 
         }
