@@ -307,65 +307,130 @@ public class UiAutomationTest {
         }
     }
 
-    //    @Test
-//    public void testAccelSlider() throws UiObjectNotFoundException, RemoteException {
-//        mDevice.pressMenu();
-//
-//        UiObject aboutButton = mDevice.findObject(new UiSelector()
-//                .text("Settings"));
-//        assertThat(aboutButton, notNullValue());
-//        aboutButton.click();
-//
-//        UiCollection settings = new UiCollection(new UiSelector()
-//                .className("android.widget.ListView"));
-//
-//        Context appContext = InstrumentationRegistry.getTargetContext();
-//
-//        SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(appContext);
-//        assertThat(mySharedPreferences, notNullValue());
-//        boolean mAccelEnabled       = mySharedPreferences.getBoolean("enable_accel_tilt", false);
-//
-//        UiObject myCheckbox3 = settings.getChildByInstance(new UiSelector().className("android.widget.CheckBox"),CHECKBOX_INDEX_ACCEL);
-//        if ( mAccelEnabled != false)
-//        {
-//            myCheckbox3.click();  // toggle state
-//        }
-//
-//        mAccelEnabled       = mySharedPreferences.getBoolean("enable_accel_tilt", false);
-//        assertEquals(false, mAccelEnabled);
-//
-////        mDevice.setOrientationLeft();
-//        int width = mDevice.getDisplayWidth();
-//        int height = mDevice.getDisplayHeight();
-//
-//        Instrumentation mInstrumentation = InstrumentationRegistry.getInstrumentation();
-//        Instrumentation.ActivityMonitor monitor = mInstrumentation.addMonitor(Gravity.class.getName(),null,false);
-//
-//
-//        mInstrumentation.removeMonitor(monitor);
-////        Gravity mGravityObj = (Gravity)InstrumentationRegistry.getTargetContext();
-//        Gravity mGravityObj = (Gravity) monitor.getLastActivity();
-//        assertThat(mGravityObj, notNullValue());
-//        double startViewingAngle = mGravityObj.mViewingAngle;
-//
-//        mDevice.drag((width*9)/10, (height*1)/10, (width*9)/10, (height*9)/10, 50);// swipe for 50*5msec from (90%, 10%) to (90%,90%)
-//        double endViewingAngle = mGravityObj.mViewingAngle;
-//
-//        assertEquals(startViewingAngle, endViewingAngle);
-// mViewingAngle.
-//
-//    }
+    final int DRAG_LEFT_SIDE_DOWN_10PCT  = 0;
+    final int DRAG_LEFT_SIDE_UP_10PCT    = 1;
+    final int DRAG_LEFT_SIDE_DOWN_80PCT  = 2;
+    final int DRAG_LEFT_SIDE_UP_80PCT    = 3;
 
-//    public Activity getActivity() {
-//        Context context = getContext();
-//        while (context instanceof ContextWrapper) {
-//            if (context instanceof Activity) {
-//                return (Activity)context;
-//            }
-//            context = ((ContextWrapper)context).getBaseContext();
-//        }
-//        return null;
-//    }
+    private void performDragEvent(int type)
+    {
+        int displayWidth = mDevice.getDisplayWidth();
+        int displayHeight = mDevice.getDisplayHeight();
+
+        int startX,endX ,startY,endY,duration;
+
+        switch(type)
+        {
+            default:
+            case DRAG_LEFT_SIDE_DOWN_10PCT:
+                startX = (displayWidth*20)/100;  // 20% across screen
+                endX   = (displayWidth*22)/100;
+                startY = (displayHeight*10)/100; // 20% from top
+                endY   = (displayHeight*20)/100; // swipe 10% down
+                duration = 100;  // 5msec per interval
+                break;
+
+            case DRAG_LEFT_SIDE_UP_10PCT:
+                startX = (displayWidth*19)/100;  // 20% across screen
+                endX   = (displayWidth*20)/100;
+                startY = (displayHeight*90)/100; // 20% from top
+                endY   = (displayHeight*80)/100; // swipe 10% down
+                duration = 100;  // 5msec per interval
+                break;
+
+            case DRAG_LEFT_SIDE_DOWN_80PCT:
+                startX = (displayWidth*20)/100;  // 20% across screen
+                endX = startX + (displayWidth*10)/100;
+                startY = (displayHeight*10)/100; // 20% from top
+                endY   = (displayHeight*90)/100;
+                duration = 100;  // 5msec per interval
+                break;
+
+            case DRAG_LEFT_SIDE_UP_80PCT:
+                startX = (displayWidth*20)/100;  // 20% across screen
+                endX   = (displayWidth*30)/100;  // 30%
+                startY = (displayHeight*90)/100; // 90% from top
+                endY   = (displayHeight*10)/100; // 10% from top
+                duration = 100;  // 5msec per interval
+                break;
+
+        }
+
+        mDevice.drag(startX,startY,endX,endY,duration);
+
+    }
+
+    /**
+     * Test the slider to adjust calculation interval
+     *
+     */
+    @Test
+    public void testCalculationIntervalAdjustment() throws UiObjectNotFoundException, InterruptedException {
+
+        {
+
+            UiObject elapsedText = mDevice.findObject(new UiSelector()
+                    .descriptionContains("hours per iteration"));
+            assertThat(elapsedText, notNullValue());
+
+            Scanner scanner = new Scanner( elapsedText.getContentDescription() );
+            float rate = scanner.nextFloat();
+            assertEquals( 1.0, rate , 0.000001);
+
+
+            performDragEvent(DRAG_LEFT_SIDE_DOWN_10PCT);
+            Thread.sleep(500);
+
+            Scanner scanner2 = new Scanner( elapsedText.getContentDescription() );
+            float rate2 = scanner2.nextFloat();
+            assertTrue( rate2<rate );
+            assertNotEquals( 0.02, rate2 , 0.000001 );
+
+
+
+
+            performDragEvent(DRAG_LEFT_SIDE_UP_10PCT);
+            Thread.sleep(500);
+
+            Scanner scanner3 = new Scanner( elapsedText.getContentDescription() );
+            float rate3 = scanner3.nextFloat();
+            assertTrue( rate3>rate2 );
+            assertNotEquals( 2.00, rate3 , 0.000001 );
+        }
+    }
+
+    /**
+     * Test the slider to adjust calculation interval
+     *
+     */
+    @Test
+    public void testCalculationIntervalAdjustmentToRails() throws UiObjectNotFoundException, InterruptedException {
+
+        {
+
+            UiObject elapsedText = mDevice.findObject(new UiSelector()
+                    .descriptionContains("hours per iteration"));
+            assertThat(elapsedText, notNullValue());
+
+            assertEquals( "1.00 hours per iteration", elapsedText.getContentDescription());
+
+
+
+
+            performDragEvent(DRAG_LEFT_SIDE_DOWN_80PCT);
+            Thread.sleep(500);
+
+            assertEquals( "0.02 hours per iteration", elapsedText.getContentDescription());
+
+
+
+            performDragEvent(DRAG_LEFT_SIDE_UP_80PCT);
+            Thread.sleep(500);
+
+            assertEquals( "2.00 hours per iteration", elapsedText.getContentDescription());
+        }
+    }
+
 
     /**
      * Uses package manager to find the package name of the device launcher. Usually this package
