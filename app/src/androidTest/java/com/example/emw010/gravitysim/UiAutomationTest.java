@@ -594,6 +594,70 @@ public class UiAutomationTest {
     }
 
 
+    /**
+     * Test the slider to adjust viewing angle
+     *
+     */
+    @Test
+    public void testViewingAngleSlider() throws UiObjectNotFoundException, InterruptedException {
+
+        {
+            // Disable accelerometer
+            Context appContext = InstrumentationRegistry.getTargetContext();
+            SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(appContext);
+            assertThat(mySharedPreferences, notNullValue());
+            if ( mySharedPreferences.getBoolean("enable_accel_tilt", true))
+            {
+                mySharedPreferences.edit().putBoolean("enable_accel_tilt", false).commit();  // force field off.
+            }
+
+
+            // get scale bar legend text
+            UiObject angleText = mDevice.findObject(new UiSelector()
+                    .descriptionContains("viewing angle is"));
+            assertThat(angleText, notNullValue());
+
+            // validate angle legend text
+            Scanner legendScanner = new Scanner( angleText.getContentDescription() );
+            assertEquals( "viewing", legendScanner.next() );
+            assertEquals( "angle", legendScanner.next() );
+            assertEquals( "is", legendScanner.next() );
+            float viewingAngle = legendScanner.nextFloat();
+            assertEquals( "degrees", legendScanner.next() );
+
+
+
+
+            performDragEvent(DRAG_RIGHT_SIDE_DOWN_10PCT);
+            Thread.sleep(500);
+
+            // re-evaluate legend text
+            legendScanner = new Scanner( angleText.getContentDescription() );
+            assertEquals( "viewing", legendScanner.next() );
+            assertEquals( "angle", legendScanner.next() );
+            assertEquals( "is", legendScanner.next() );
+            float viewingAngle2 = legendScanner.nextFloat();
+            assertTrue( viewingAngle2<viewingAngle );
+            assertEquals( "degrees", legendScanner.next() );
+
+
+
+
+            performDragEvent(DRAG_RIGHT_SIDE_UP_10PCT);
+            Thread.sleep(500);
+
+            // re-re-evaluate legend text
+            legendScanner = new Scanner( angleText.getContentDescription() );
+            assertEquals( "viewing", legendScanner.next() );
+            assertEquals( "angle", legendScanner.next() );
+            assertEquals( "is", legendScanner.next() );
+            float viewingAngle3 = legendScanner.nextFloat();
+            assertTrue( viewingAngle2<viewingAngle3 );
+            assertEquals( "degrees", legendScanner.next() );
+
+        }
+    }
+
     private void assertDistanceScaleSmaller(float distScaleAU, float distScaleAU2, int barLengthPixels, int barLengthPixels2)
     {
         if (distScaleAU2>distScaleAU )  // if the legend text is bigger its just a fail.
@@ -631,6 +695,10 @@ public class UiAutomationTest {
     final int DRAG_BOTTOM_LEFT_80PCT     = 5;
     final int DRAG_BOTTOM_RIGHT_10PCT    = 6;
     final int DRAG_BOTTOM_LEFT_10PCT     = 7;
+    final int DRAG_RIGHT_SIDE_DOWN_10PCT = 8;
+    final int DRAG_RIGHT_SIDE_UP_10PCT   = 9;
+    final int DRAG_RIGHT_SIDE_DOWN_80PCT = 10;
+    final int DRAG_RIGHT_SIDE_UP_80PCT   = 11;
 
     private void performDragEvent(int type)
     {
@@ -660,7 +728,7 @@ public class UiAutomationTest {
 
             case DRAG_LEFT_SIDE_DOWN_80PCT:
                 startX = (displayWidth*20)/100;  // 20% across screen
-                endX = startX + (displayWidth*10)/100;
+                endX   = (displayWidth*30)/100;
                 startY = (displayHeight*10)/100; // 20% from top
                 endY   = (displayHeight*90)/100;
                 duration = 30;  // 5msec per interval
@@ -703,6 +771,38 @@ public class UiAutomationTest {
                 endX   = (displayWidth*20)/100;  // 30%
                 startY = (displayHeight*90)/100; // 90% from top
                 endY   = (displayHeight*91)/100; // 10% from top
+                duration = 30;  // 5msec per interval
+                break;
+
+            case DRAG_RIGHT_SIDE_DOWN_10PCT:
+                startX = (displayWidth*80)/100;  // 80% across screen
+                endX   = (displayWidth*82)/100;
+                startY = (displayHeight*10)/100; // 20% from top
+                endY   = (displayHeight*20)/100; // swipe 10% down
+                duration = 30;  // 5msec per interval
+                break;
+
+            case DRAG_RIGHT_SIDE_UP_10PCT:
+                startX = (displayWidth*79)/100;  // 80% across screen
+                endX   = (displayWidth*80)/100;
+                startY = (displayHeight*90)/100; // 20% from top
+                endY   = (displayHeight*80)/100; // swipe 10% down
+                duration = 30;  // 5msec per interval
+                break;
+
+            case DRAG_RIGHT_SIDE_DOWN_80PCT:
+                startX = (displayWidth*80)/100;  // 80% across screen
+                endX   = (displayWidth*90)/100;
+                startY = (displayHeight*10)/100; // 20% from top
+                endY   = (displayHeight*90)/100;
+                duration = 30;  // 5msec per interval
+                break;
+
+            case DRAG_RIGHT_SIDE_UP_80PCT:
+                startX = (displayWidth*80)/100;  // 80% across screen
+                endX   = (displayWidth*90)/100;  // 90%
+                startY = (displayHeight*90)/100; // 90% from top
+                endY   = (displayHeight*10)/100; // 10% from top
                 duration = 30;  // 5msec per interval
                 break;
 

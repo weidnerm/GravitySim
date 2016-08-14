@@ -236,19 +236,21 @@ public class Gravity extends Activity
 
         private double mElapsedTime = 0;
         private double mElapsedTimeDisplayed = 0;
-        Rect mElapsedTimeTextBounds = new Rect();
+        private Rect mElapsedTimeTextBounds = new Rect();
 
         private double mSimulationRate = 0;
-        Rect mSimulationRateBounds = new Rect();
+        private Rect mSimulationRateBounds = new Rect();
 
         private double mComputationIntervalDisplayed = 0;
-        Rect mComputationIntervalBounds = new Rect();
+        private Rect mComputationIntervalBounds = new Rect();
 
         private int mDistanceScaleBarLength = 0;
-        Rect mDistanceScaleBarBounds = new Rect();
+        private Rect mDistanceScaleBarBounds = new Rect();
 
         private double mDistanceScaleAuForDisplay = 0;
-        Rect mDistanceScaleTextBounds = new Rect();
+        private Rect mDistanceScaleTextBounds = new Rect();
+
+        private Rect mViewingAngleTextBounds = new Rect();
 
         /**
          * Custom view that is used to represent the gravity simulation graphical
@@ -505,8 +507,11 @@ public class Gravity extends Activity
             String angleText = String.format("%3.1f degs", mViewingAngle);
 
             int orig10Pix = (int)(10*mDisplayScaleFactor);
-            canvas.drawText(angleText, mDisplayMetrics.widthPixels - 6*orig10Pix,
-                    mDisplayMetrics.heightPixels - orig10Pix/4, mAnglePaint);
+            int textX = mDisplayMetrics.widthPixels - 6*orig10Pix;
+            int textY = mDisplayMetrics.heightPixels - orig10Pix/4;
+            canvas.drawText(angleText, textX, textY, mAnglePaint);
+            mAnglePaint.getTextBounds(angleText, 0, angleText.length(), mViewingAngleTextBounds);
+            mViewingAngleTextBounds.offset(textX, textY);
         }
 
         /**
@@ -523,7 +528,6 @@ public class Gravity extends Activity
             canvas.drawText(timeText, orig10Pix, orig10Pix, mElapsedTimePaint);
             mElapsedTimePaint.getTextBounds(timeText,0,timeText.length(),mElapsedTimeTextBounds);
             mElapsedTimeTextBounds.offset(orig10Pix,orig10Pix);
-//            mGravityAccessHelper.invalidateVirtualView(0);
         }
 
         private void displayGrid(Canvas canvas)
@@ -1037,7 +1041,7 @@ public class Gravity extends Activity
             final public int VIRTUAL_VIEW_ID_CALC_INTERVAL   =  12; // 12	hours/calc indicator
             final public int VIRTUAL_VIEW_ID_DIST_SCALE_BAR  =  20; // 20	scale bar
             final public int VIRTUAL_VIEW_ID_DIST_SCALE_TEXT =  22; // 22	scale text
-            final public int VIRTUAL_VIEW_ID_VIEWING_ANGLE =  30; // 30	viewing angle
+            final public int VIRTUAL_VIEW_ID_VIEWING_ANGLE   =  30; // 30	viewing angle
 //            final public int VIRTUAL_VIEW_ID_xx =  40; // 40	hours per calc slider
 //            final public int VIRTUAL_VIEW_ID_xx =  50; // 50	viewing angle slider
 //            final public int VIRTUAL_VIEW_ID_xx =  60; // 60	distance scale slider
@@ -1086,6 +1090,7 @@ public class Gravity extends Activity
                     else if (mComputationIntervalBounds.contains((int)x,(int)y)) return VIRTUAL_VIEW_ID_CALC_INTERVAL;
                     else if (mDistanceScaleBarBounds.contains((int)x,(int)y))    return VIRTUAL_VIEW_ID_DIST_SCALE_BAR;
                     else if (mDistanceScaleTextBounds.contains((int)x,(int)y))   return VIRTUAL_VIEW_ID_DIST_SCALE_TEXT;
+                    else if (mViewingAngleTextBounds.contains((int)x,(int)y))    return VIRTUAL_VIEW_ID_VIEWING_ANGLE;
                     else return ExploreByTouchHelper.HOST_ID;
                 }
             }
@@ -1095,12 +1100,12 @@ public class Gravity extends Activity
             @Override
             protected void getVisibleVirtualViews(List<Integer> virtualViewIds)
             {
-                virtualViewIds.add(VIRTUAL_VIEW_ID_DIST_SCALE_BAR); // 20	scale bar
                 virtualViewIds.add(VIRTUAL_VIEW_ID_ELAPSED_TIME); // 0	elapsed time
                 virtualViewIds.add(VIRTUAL_VIEW_ID_SIMULATION_RATE); // 10	days/sec indicator
                 virtualViewIds.add(VIRTUAL_VIEW_ID_CALC_INTERVAL); // 12	hours/calc indicator
+                virtualViewIds.add(VIRTUAL_VIEW_ID_DIST_SCALE_BAR); // 20	scale bar
                 virtualViewIds.add(VIRTUAL_VIEW_ID_DIST_SCALE_TEXT); // 22	scale text
-//                virtualViewIds.add(30); // 30	viewing angle
+                virtualViewIds.add(VIRTUAL_VIEW_ID_VIEWING_ANGLE); // 30	viewing angle
 //                virtualViewIds.add(40); // 40	hours per calc slider
 //                virtualViewIds.add(50); // 50	viewing angle slider
 //                virtualViewIds.add(60); // 60	distance scale slider
@@ -1150,6 +1155,9 @@ public class Gravity extends Activity
                         break;
                     case VIRTUAL_VIEW_ID_DIST_SCALE_TEXT:
                         returnVal = getContext().getString(R.string.desc_distance_scale_text, mDistanceScaleAuForDisplay);
+                        break;
+                    case VIRTUAL_VIEW_ID_VIEWING_ANGLE:
+                        returnVal = getContext().getString(R.string.desc_viewing_angle, mViewingAngle);
                         break;
                     default:
                         returnVal = getContext().getString(R.string.desc_unknown_field);
@@ -1202,6 +1210,9 @@ public class Gravity extends Activity
                     case VIRTUAL_VIEW_ID_DIST_SCALE_TEXT:
                         returnVal = mDistanceScaleTextBounds;
                         break;
+                    case VIRTUAL_VIEW_ID_VIEWING_ANGLE:
+                        returnVal = mViewingAngleTextBounds;
+                        break;
                     default:
                         returnVal = new Rect(0,0,0,0);
                         break;
@@ -1228,7 +1239,7 @@ public class Gravity extends Activity
                 final Rect bounds = getBoundsForIndex(virtualViewId, null);
                 node.setBoundsInParent(bounds);
                 node.setFocusable(true);
-//                node.setEnabled(true);
+
             }
 
         }
