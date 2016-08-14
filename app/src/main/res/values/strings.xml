@@ -27,4 +27,7 @@
     <string name="about_display_title">3D Display:</string>
     <string name="about_display_1">The 3D stereo anaglyph display is supported by rendering the system twice.  It is rendered for the left eye using red, and is rendered for the right eye using cyan or blue.  The eye separation and viewing distance constants are currently hard coded in the application.</string>
     <string name="about_display_2">Most 3D glasses have red for the left eye and cyan (blue/green) for the right.  Some LCD displays have a small amount of green that bleeds into the red.  For these displays, the green component can be disabled via the preferences.  This allows the right eye view to be seen properly without it aliasing into the left eye view.</string>
+    <string name="desc_elapsed_days">elapsed time %1$d days</string>
+    <string name="desc_simulation_rate">simulation rate %1$4.1f</string>
+    <string name="desc_unknown_field">unknown field</string>
 </resources>

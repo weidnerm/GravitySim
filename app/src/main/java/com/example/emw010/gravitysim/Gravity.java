@@ -10,6 +10,7 @@ import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -18,8 +19,14 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 //import android.support.v7.app.AppCompatActivity;
+import android.support.v4.view.ViewCompat;
+import android.support.v4.view.accessibility.AccessibilityNodeInfoCompat;
 import android.util.DisplayMetrics;
 import android.view.*;
+import android.support.v4.widget.ExploreByTouchHelper;
+import android.view.accessibility.AccessibilityEvent;
+
+import java.util.List;
 
 
 //public class Gravity extends AppCompatActivity
@@ -223,7 +230,14 @@ public class Gravity extends Activity
         public Paint mLeft3DPaint,mRight3DPaint;
         public Paint mLeft3DShadowPaint,mRight3DShadowPaint;
         public double mLastScaleLength = 1;
+        public GravityAccessHelper mGravityAccessHelper;
 
+        private double mElapsedTime = 0;
+        private double mElapsedTimeDisplayed = 0;
+        Rect mElapsedTimeTextBounds = new Rect();
+
+        private double mSimulationRate = 0;
+        Rect mSimulationRateBounds = new Rect();
 
         /**
          * Custom view that is used to represent the gravity simulation graphical
@@ -296,6 +310,10 @@ public class Gravity extends Activity
             {
                 mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_UI);
             }
+
+            // Set up accessibility helper class.
+            mGravityAccessHelper = new GravityAccessHelper(this);
+            ViewCompat.setAccessibilityDelegate(this, mGravityAccessHelper);
 
         }
 
@@ -452,7 +470,8 @@ public class Gravity extends Activity
 
 
             // Calculate the new object positions.
-            computeNewPositions(mNumIterationsPerDisplayPoint,mComputationTimeInterval);
+            mElapsedTime +=
+                    computeNewPositions(mNumIterationsPerDisplayPoint,mComputationTimeInterval);
             // Fetch the calculated data.
             storeNewSetOfCoords();
             // Update user preferences.
@@ -485,10 +504,12 @@ public class Gravity extends Activity
          */
         private void displayElapsedTime(Canvas canvas)
         {
-            String timeText = String.format("%d days", mOnDrawCount);
+            mElapsedTimeDisplayed = mElapsedTime/(24*60*60);
+            String timeText = String.format("%d days", (int)mElapsedTimeDisplayed);
 
             int orig10Pix = (int)(10*mDisplayScaleFactor);
             canvas.drawText(timeText, orig10Pix, orig10Pix, mElapsedTimePaint);
+            mElapsedTimePaint.getTextBounds(timeText,0,timeText.length(),mElapsedTimeTextBounds);
         }
 
         private void displayGrid(Canvas canvas)
@@ -595,21 +616,20 @@ public class Gravity extends Activity
 
             int displayWidth;
             String scaleText;
-            double tempVal;
 
             displayWidth = mDisplayMetrics.widthPixels;
 
             if ( elapsedTime_msec != 0 )
             {
-                tempVal = (double)mNumIterationsPerDisplayPoint*mOnDrawCount*mComputationTimeInterval/ONE_DAY_TIME_INTERVAL*1000/elapsedTime_msec;
+                mSimulationRate = (double)mNumIterationsPerDisplayPoint*mOnDrawCount*mComputationTimeInterval/ONE_DAY_TIME_INTERVAL*1000/elapsedTime_msec;
             }
             else
             {
-                tempVal = 0;
+                mSimulationRate = 0;
             }
 
             int orig10Pix = (int)(10*mDisplayScaleFactor);
-            scaleText = String.format("%4.1f days/sec", tempVal);
+            scaleText = String.format("%4.1f days/sec", mSimulationRate);
 
             canvas.drawText(scaleText, (float)displayWidth-orig10Pix*10,
                     (float)orig10Pix, mTimeScalePaint);
@@ -618,6 +638,8 @@ public class Gravity extends Activity
 
             canvas.drawText(scaleText, (float)displayWidth-orig10Pix*10,
                     (float)orig10Pix*2, mTimeScalePaint);
+            mTimeScalePaint.getTextBounds(scaleText,0,scaleText.length(),mSimulationRateBounds);
+
         }
 
         public void onSensorChanged(SensorEvent event) {
@@ -933,6 +955,150 @@ public class Gravity extends Activity
             }
         }
 
+        private class GravityAccessHelper extends ExploreByTouchHelper
+        {
+//            private final Rect mTempParentBounds = new Rect();
+
+            public GravityAccessHelper(View parentView)
+            {
+                super(parentView);
+            }
+
+            @Override
+            protected int getVirtualViewAt(float x, float y)
+            {
+                {
+                    // We already map (x,y) to bar index for onTouchEvent().
+//                final int index = getBarIndexAt(x, y);
+//                if (index >= 0) {
+//                    return index;
+//                }
+
+                    return ExploreByTouchHelper.INVALID_ID;
+                }
+            }
+
+            @Override
+            protected void getVisibleVirtualViews(List<Integer> virtualViewIds)
+            {
+                virtualViewIds.add(0); // 0	elapsed time
+                virtualViewIds.add(10); // 10	days/sec indicator
+//                virtualViewIds.add(12); // 12	hours/calc indicator
+//                virtualViewIds.add(20); // 20	scale bar
+//                virtualViewIds.add(22); // 22	scale text
+//                virtualViewIds.add(30); // 30	viewing angle
+//                virtualViewIds.add(40); // 40	hours per calc slider
+//                virtualViewIds.add(50); // 50	viewing angle slider
+//                virtualViewIds.add(60); // 60	distance scale slider
+//                virtualViewIds.add(70); // 70	first vert gridline lefteye
+//                virtualViewIds.add(71); // ..
+//                virtualViewIds.add(72); // ..
+//                virtualViewIds.add(73); // ..
+//                virtualViewIds.add(74); // 74	last vert gridline lefteye
+//                virtualViewIds.add(75); // 75	first horiz gridline lefteye
+//                virtualViewIds.add(76); // ..
+//                virtualViewIds.add(77); // ..
+//                virtualViewIds.add(78); // ..
+//                virtualViewIds.add(79); // 79	last horiz gridline lefteye
+//                virtualViewIds.add(80); // 80	first vert gridline righteye
+//                virtualViewIds.add(81); // ..
+//                virtualViewIds.add(82); // ..
+//                virtualViewIds.add(83); // ..
+//                virtualViewIds.add(84); // 84	last vert gridline righteye
+//                virtualViewIds.add(85); // 85	first horiz gridline righteye
+//                virtualViewIds.add(86); // ..
+//                virtualViewIds.add(87); // ..
+//                virtualViewIds.add(88); // ..
+//                virtualViewIds.add(89); // 89	last horiz gridline righteye
+//
+//                virtualViewIds.add(99); // 99	background click	name/click
+//                virtualViewIds.add(100); // 100+10n+0 - object n left		name/click
+//                virtualViewIds.add(101); // 100+10n+1 - object n right		name
+            }
+
+            private CharSequence getDescriptionForIndex(int index)
+            {
+                CharSequence returnVal;
+
+                switch(index)
+                {
+                    case 0:
+                        returnVal = getContext().getString(R.string.desc_elapsed_days, (int)mElapsedTimeDisplayed);
+                        break;
+                    case 10:
+                        returnVal = getContext().getString(R.string.desc_simulation_rate, mSimulationRate);
+                        break;
+                    default:
+                        returnVal = getContext().getString(R.string.desc_unknown_field);
+                        break;
+                }
+
+                return returnVal;
+            }
+
+            @Override
+            protected void onPopulateEventForVirtualView(int virtualViewId, AccessibilityEvent event) {
+                final CharSequence desc = getDescriptionForIndex(virtualViewId);
+                event.setContentDescription(desc);
+            }
+
+            @Override
+            protected boolean onPerformActionForVirtualView(int virtualViewId, int action, Bundle arguments)
+            {
+//                switch (action)
+//                {
+//                    case AccessibilityNodeInfoCompat.ACTION_CLICK:
+//                        // Click handling should be consistent with onTouchEvent().
+//                        onBarClicked(virtualViewId);
+//                        return true;
+//                }
+
+                // Only need to handle actions added in populateNode.
+                return false;
+            }
+
+            private Rect getBoundsForIndex(int index, Rect out)
+            {
+                Rect returnVal;
+
+                switch(index)
+                {
+                    case 0:
+                        returnVal = mElapsedTimeTextBounds;
+                        break;
+                    case 10:
+                        returnVal = mSimulationRateBounds;
+                        break;
+                    default:
+                        returnVal = new Rect(0,0,0,0);
+                        break;
+                }
+
+                if (out != null)
+                {
+                    out.set(returnVal);
+                }
+                return returnVal;
+            }
+
+            @Override
+            protected void onPopulateNodeForVirtualView(
+                    int virtualViewId, AccessibilityNodeInfoCompat node) {
+                // Node and event descriptions are usually identical.
+                final CharSequence desc = getDescriptionForIndex(virtualViewId);
+                node.setContentDescription(desc);
+
+//                // Since the user can tap a bar, add the CLICK action.
+//                node.addAction(AccessibilityNodeInfoCompat.ACTION_CLICK);
+
+                // Reported bounds should be consistent with onDraw().
+                final Rect bounds = getBoundsForIndex(virtualViewId, null);
+                node.setBoundsInParent(bounds);
+            }
+
+        }
+
+
 
     }
 
@@ -1177,7 +1343,7 @@ public class Gravity extends Activity
     //
     // Replace with JNI later
     //
-    void computeNewPositions(int numIterationsPerDisplayPoint, double computationTimeInterval)
+    double computeNewPositions(int numIterationsPerDisplayPoint, double computationTimeInterval )
     {
         int index;
 
@@ -1185,6 +1351,8 @@ public class Gravity extends Activity
         {
             mySolarSystem.processTimeInterval(computationTimeInterval);
         }
+
+        return numIterationsPerDisplayPoint*computationTimeInterval;
     }
 
     int getGravityNumObjects( )

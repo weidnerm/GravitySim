@@ -29,11 +29,12 @@ import android.support.test.uiautomator.Until;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
+
 
 import org.junit.Test;
+
+import java.util.Scanner;
 
 
 @RunWith(AndroidJUnit4.class)
@@ -79,7 +80,8 @@ public class UiAutomationTest {
     }
 
     @Test
-    public void checkPreconditions() {
+    public void checkPreconditions()
+    {
         assertThat(mDevice, notNullValue());
     }
 
@@ -213,7 +215,32 @@ public class UiAutomationTest {
         myCheckbox3.click();   // put it back to the original state
     }
 
-//    @Test
+    @Test
+    public void testElapsedTime() throws UiObjectNotFoundException, InterruptedException {
+
+        UiObject elapsedText = mDevice.findObject(new UiSelector()
+                .descriptionContains("elapsed time"));
+        assertThat(elapsedText, notNullValue());
+
+        Scanner scanner = new Scanner( elapsedText.getContentDescription() );
+        assertEquals( "elapsed", scanner.next() );
+        assertEquals( "time", scanner.next() );
+        int firstTime = scanner.nextInt();
+        assertNotEquals( 0, firstTime );
+        assertEquals( "days", scanner.next() );
+        Thread.sleep(500);
+
+        Scanner scanner2 = new Scanner( elapsedText.getContentDescription() );
+        assertEquals( "elapsed", scanner2.next() );
+        assertEquals( "time", scanner2.next() );
+        int secondTime = scanner2.nextInt();
+        assertNotEquals( secondTime, firstTime );
+        assertEquals( "days", scanner2.next() );
+
+
+    }
+
+    //    @Test
 //    public void testAccelSlider() throws UiObjectNotFoundException, RemoteException {
 //        mDevice.pressMenu();
 //
