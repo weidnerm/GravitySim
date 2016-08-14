@@ -55,6 +55,8 @@ public class Gravity extends Activity
      * display coordinates in pixels.
      */
     double mDisplayScale = ONE_AU_METERS / 40; // start with xx pixels per AU
+    double mDisplayScaleMin = mDisplayScale/10000; // start with xx pixels per AU
+    double mDisplayScaleMax = mDisplayScale*10000; // start with xx pixels per AU
     /**
      * History of display coordinates for all the gravity objects.
      */
@@ -575,7 +577,7 @@ public class Gravity extends Activity
          */
         private void displayDistanceScale(Canvas canvas)
         {
-            double scaleLength = 1000;  // number of AU
+            double scaleLength = 1000000;  // number of AU
             int displayWidth;
             String scaleText;
 
@@ -918,6 +920,8 @@ public class Gravity extends Activity
                 mDisplayScale = mDisplayScale* newScale ;
                 mTouchLastHandledX = currentX;
                 mTouchLastHandledY = currentY;
+                if (mDisplayScale < mDisplayScaleMin) mDisplayScale = mDisplayScaleMin;  // put a floor on it
+                if (mDisplayScale > mDisplayScaleMax) mDisplayScale = mDisplayScaleMax;  // put a ceiling on it
 
     //         		mDebugText_1 = String.format("mDisplayScale=%f newScale=%f", (float)mDisplayScale,(float)newScale);
 

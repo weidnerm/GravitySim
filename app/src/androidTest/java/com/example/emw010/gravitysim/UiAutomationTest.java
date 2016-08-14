@@ -56,7 +56,7 @@ public class UiAutomationTest {
     final int CHECKBOX_INDEX_ACCEL = 3;
 
     @Before
-    public void startMainActivityFromHomeScreen() {
+    public void startMainActivityFromHomeScreen() throws RemoteException {
         // Initialize UiDevice instance
         mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
 
@@ -67,6 +67,8 @@ public class UiAutomationTest {
         final String launcherPackage = getLauncherPackageName();
         assertThat(launcherPackage, notNullValue());
         mDevice.wait(Until.hasObject(By.pkg(launcherPackage).depth(0)), LAUNCH_TIMEOUT);
+
+        mDevice.setOrientationLeft();
 
         // Launch the blueprint app
         Context context = InstrumentationRegistry.getContext();
@@ -307,58 +309,7 @@ public class UiAutomationTest {
         }
     }
 
-    final int DRAG_LEFT_SIDE_DOWN_10PCT  = 0;
-    final int DRAG_LEFT_SIDE_UP_10PCT    = 1;
-    final int DRAG_LEFT_SIDE_DOWN_80PCT  = 2;
-    final int DRAG_LEFT_SIDE_UP_80PCT    = 3;
 
-    private void performDragEvent(int type)
-    {
-        int displayWidth = mDevice.getDisplayWidth();
-        int displayHeight = mDevice.getDisplayHeight();
-
-        int startX,endX ,startY,endY,duration;
-
-        switch(type)
-        {
-            default:
-            case DRAG_LEFT_SIDE_DOWN_10PCT:
-                startX = (displayWidth*20)/100;  // 20% across screen
-                endX   = (displayWidth*22)/100;
-                startY = (displayHeight*10)/100; // 20% from top
-                endY   = (displayHeight*20)/100; // swipe 10% down
-                duration = 100;  // 5msec per interval
-                break;
-
-            case DRAG_LEFT_SIDE_UP_10PCT:
-                startX = (displayWidth*19)/100;  // 20% across screen
-                endX   = (displayWidth*20)/100;
-                startY = (displayHeight*90)/100; // 20% from top
-                endY   = (displayHeight*80)/100; // swipe 10% down
-                duration = 100;  // 5msec per interval
-                break;
-
-            case DRAG_LEFT_SIDE_DOWN_80PCT:
-                startX = (displayWidth*20)/100;  // 20% across screen
-                endX = startX + (displayWidth*10)/100;
-                startY = (displayHeight*10)/100; // 20% from top
-                endY   = (displayHeight*90)/100;
-                duration = 100;  // 5msec per interval
-                break;
-
-            case DRAG_LEFT_SIDE_UP_80PCT:
-                startX = (displayWidth*20)/100;  // 20% across screen
-                endX   = (displayWidth*30)/100;  // 30%
-                startY = (displayHeight*90)/100; // 90% from top
-                endY   = (displayHeight*10)/100; // 10% from top
-                duration = 100;  // 5msec per interval
-                break;
-
-        }
-
-        mDevice.drag(startX,startY,endX,endY,duration);
-
-    }
 
     /**
      * Test the slider to adjust calculation interval
@@ -433,6 +384,335 @@ public class UiAutomationTest {
 
 
     /**
+     * Test the slider to adjust distance scale
+     *
+     */
+    @Test
+    public void testDistanceScaleSlider() throws UiObjectNotFoundException, InterruptedException {
+
+        {
+            // get scale bar legend text
+            UiObject scaleBarText = mDevice.findObject(new UiSelector()
+                    .descriptionContains("scale bar represents"));
+            assertThat(scaleBarText, notNullValue());
+
+            // get scale bar line info
+            UiObject scaleBar = mDevice.findObject(new UiSelector()
+                    .descriptionContains("scale bar length is"));
+            assertThat(scaleBar, notNullValue());
+
+            // validate scale bar legend text
+            Scanner legendScanner = new Scanner( scaleBarText.getContentDescription() );
+            assertEquals( "scale", legendScanner.next() );
+            assertEquals( "bar", legendScanner.next() );
+            assertEquals( "represents", legendScanner.next() );
+            float distScaleAU = legendScanner.nextFloat();
+            assertEquals( 10, distScaleAU , 0.000001 );
+            assertEquals( "Astronomical", legendScanner.next() );
+            assertEquals( "Units", legendScanner.next() );
+
+            // validate scale bar line
+            Scanner barScanner = new Scanner( scaleBar.getContentDescription() );
+            assertEquals( "scale", barScanner.next() );
+            assertEquals( "bar", barScanner.next() );
+            assertEquals( "length", barScanner.next() );
+            assertEquals( "is", barScanner.next() );
+            int barLengthPixels = barScanner.nextInt();
+            assertNotEquals( 0, barLengthPixels );
+            assertEquals( "pixels", barScanner.next() );
+
+
+
+
+
+            performDragEvent(DRAG_BOTTOM_LEFT_10PCT);
+            Thread.sleep(500);
+
+            // re-evaluate legend text
+            legendScanner = new Scanner( scaleBarText.getContentDescription() );
+            assertEquals( "scale", legendScanner.next() );
+            assertEquals( "bar", legendScanner.next() );
+            assertEquals( "represents", legendScanner.next() );
+            float distScaleAU2 = legendScanner.nextFloat();
+            assertNotEquals( 0, distScaleAU , 0.000001 );
+            assertEquals( "Astronomical", legendScanner.next() );
+            assertEquals( "Units", legendScanner.next() );
+
+            // re-evaluate bar line
+            barScanner = new Scanner( scaleBar.getContentDescription() );
+            assertEquals( "scale", barScanner.next() );
+            assertEquals( "bar", barScanner.next() );
+            assertEquals( "length", barScanner.next() );
+            assertEquals( "is", barScanner.next() );
+            int barLengthPixels2 = barScanner.nextInt();
+            assertNotEquals( 0, barLengthPixels );
+            assertEquals( "pixels", barScanner.next() );
+
+            // make sure dist scale is smaller
+            assertDistanceScaleSmaller(distScaleAU,  distScaleAU2,  barLengthPixels,  barLengthPixels2);
+
+
+
+
+
+
+            performDragEvent(DRAG_BOTTOM_RIGHT_10PCT);
+            Thread.sleep(500);
+
+            // re-re-evaluate legend text
+            legendScanner = new Scanner( scaleBarText.getContentDescription() );
+            assertEquals( "scale", legendScanner.next() );
+            assertEquals( "bar", legendScanner.next() );
+            assertEquals( "represents", legendScanner.next() );
+            float distScaleAU3 = legendScanner.nextFloat();
+            assertNotEquals( 0, distScaleAU3 , 0.000001 );
+            assertEquals( "Astronomical", legendScanner.next() );
+            assertEquals( "Units", legendScanner.next() );
+
+            // re-evaluate bar line
+            barScanner = new Scanner( scaleBar.getContentDescription() );
+            assertEquals( "scale", barScanner.next() );
+            assertEquals( "bar", barScanner.next() );
+            assertEquals( "length", barScanner.next() );
+            assertEquals( "is", barScanner.next() );
+            int barLengthPixels3 = barScanner.nextInt();
+            assertNotEquals( 0, barLengthPixels3 );
+            assertEquals( "pixels", barScanner.next() );
+
+            // make sure dist scale is now larger
+            assertDistanceScaleLarger(distScaleAU2,  distScaleAU3,  barLengthPixels2,  barLengthPixels3);
+
+        }
+    }
+
+    /**
+     * Test the slider to adjust distance scale
+     *
+     */
+    @Test
+    public void testDistanceScaleSliderLimits() throws UiObjectNotFoundException, InterruptedException {
+
+        {
+            // get scale bar legend text
+            UiObject scaleBarText = mDevice.findObject(new UiSelector()
+                    .descriptionContains("scale bar represents"));
+            assertThat(scaleBarText, notNullValue());
+
+            // get scale bar line info
+            UiObject scaleBar = mDevice.findObject(new UiSelector()
+                    .descriptionContains("scale bar length is"));
+            assertThat(scaleBar, notNullValue());
+
+            // validate scale bar legend text
+            Scanner legendScanner = new Scanner( scaleBarText.getContentDescription() );
+            assertEquals( "scale", legendScanner.next() );
+            assertEquals( "bar", legendScanner.next() );
+            assertEquals( "represents", legendScanner.next() );
+            float distScaleAU = legendScanner.nextFloat();
+            assertEquals( 10, distScaleAU , 0.000001 );
+            assertEquals( "Astronomical", legendScanner.next() );
+            assertEquals( "Units", legendScanner.next() );
+
+            // validate scale bar line
+            Scanner barScanner = new Scanner( scaleBar.getContentDescription() );
+            assertEquals( "scale", barScanner.next() );
+            assertEquals( "bar", barScanner.next() );
+            assertEquals( "length", barScanner.next() );
+            assertEquals( "is", barScanner.next() );
+            int barLengthPixels = barScanner.nextInt();
+            assertNotEquals( 0, barLengthPixels );
+            assertEquals( "pixels", barScanner.next() );
+
+
+
+
+
+            performDragEvent(DRAG_BOTTOM_LEFT_80PCT);
+            Thread.sleep(500);
+            performDragEvent(DRAG_BOTTOM_LEFT_80PCT);
+            Thread.sleep(500);
+            performDragEvent(DRAG_BOTTOM_LEFT_80PCT);
+            Thread.sleep(500);
+            performDragEvent(DRAG_BOTTOM_LEFT_80PCT);
+            Thread.sleep(500);
+
+            // re-evaluate legend text
+            legendScanner = new Scanner( scaleBarText.getContentDescription() );
+            assertEquals( "scale", legendScanner.next() );
+            assertEquals( "bar", legendScanner.next() );
+            assertEquals( "represents", legendScanner.next() );
+            float distScaleAU2 = legendScanner.nextFloat();
+            assertEquals( 100000, distScaleAU2 , 0.000001 );
+            assertEquals( "Astronomical", legendScanner.next() );
+            assertEquals( "Units", legendScanner.next() );
+
+            // re-evaluate bar line
+            barScanner = new Scanner( scaleBar.getContentDescription() );
+            assertEquals( "scale", barScanner.next() );
+            assertEquals( "bar", barScanner.next() );
+            assertEquals( "length", barScanner.next() );
+            assertEquals( "is", barScanner.next() );
+            int barLengthPixels2 = barScanner.nextInt();
+            assertNotEquals( 0, barLengthPixels2 );
+            assertEquals( "pixels", barScanner.next() );
+
+
+
+
+
+
+            performDragEvent(DRAG_BOTTOM_RIGHT_80PCT);
+            Thread.sleep(500);
+            performDragEvent(DRAG_BOTTOM_RIGHT_80PCT);
+            Thread.sleep(500);
+            performDragEvent(DRAG_BOTTOM_RIGHT_80PCT);
+            Thread.sleep(500);
+            performDragEvent(DRAG_BOTTOM_RIGHT_80PCT);
+            Thread.sleep(500);
+
+            // re-re-evaluate legend text
+            legendScanner = new Scanner( scaleBarText.getContentDescription() );
+            assertEquals( "scale", legendScanner.next() );
+            assertEquals( "bar", legendScanner.next() );
+            assertEquals( "represents", legendScanner.next() );
+            float distScaleAU3 = legendScanner.nextFloat();
+            assertEquals( .001, distScaleAU3 , 0.000001 );
+            assertEquals( "Astronomical", legendScanner.next() );
+            assertEquals( "Units", legendScanner.next() );
+
+            // re-evaluate bar line
+            barScanner = new Scanner( scaleBar.getContentDescription() );
+            assertEquals( "scale", barScanner.next() );
+            assertEquals( "bar", barScanner.next() );
+            assertEquals( "length", barScanner.next() );
+            assertEquals( "is", barScanner.next() );
+            int barLengthPixels3 = barScanner.nextInt();
+            assertNotEquals( 0, barLengthPixels3 );
+            assertEquals( "pixels", barScanner.next() );
+
+        }
+    }
+
+
+    private void assertDistanceScaleSmaller(float distScaleAU, float distScaleAU2, int barLengthPixels, int barLengthPixels2)
+    {
+        if (distScaleAU2>distScaleAU )  // if the legend text is bigger its just a fail.
+        {
+            fail(String.format("%f is not less than %f",distScaleAU2,distScaleAU));
+        }
+        else if (distScaleAU2 == distScaleAU )
+        {
+            if (barLengthPixels2 >= barLengthPixels )
+            {
+                fail(String.format("%d is not less than %d",barLengthPixels2,barLengthPixels));
+            }
+        }
+    }
+    private void assertDistanceScaleLarger(float distScaleAU, float distScaleAU2, int barLengthPixels, int barLengthPixels2)
+    {
+        if (distScaleAU2<distScaleAU )  // if the legend text is bigger its just a fail.
+        {
+            fail(String.format("%f is not more than %f",distScaleAU2,distScaleAU));
+        }
+        else if (distScaleAU2 == distScaleAU )
+        {
+            if (barLengthPixels2 <= barLengthPixels )
+            {
+                fail(String.format("%d is not more than %d",barLengthPixels2,barLengthPixels));
+            }
+        }
+    }
+
+    final int DRAG_LEFT_SIDE_DOWN_10PCT  = 0;
+    final int DRAG_LEFT_SIDE_UP_10PCT    = 1;
+    final int DRAG_LEFT_SIDE_DOWN_80PCT  = 2;
+    final int DRAG_LEFT_SIDE_UP_80PCT    = 3;
+    final int DRAG_BOTTOM_RIGHT_80PCT    = 4;
+    final int DRAG_BOTTOM_LEFT_80PCT     = 5;
+    final int DRAG_BOTTOM_RIGHT_10PCT    = 6;
+    final int DRAG_BOTTOM_LEFT_10PCT     = 7;
+
+    private void performDragEvent(int type)
+    {
+        int displayWidth = mDevice.getDisplayWidth();
+        int displayHeight = mDevice.getDisplayHeight();
+
+        int startX,endX ,startY,endY,duration;
+
+        switch(type)
+        {
+            default:
+            case DRAG_LEFT_SIDE_DOWN_10PCT:
+                startX = (displayWidth*20)/100;  // 20% across screen
+                endX   = (displayWidth*22)/100;
+                startY = (displayHeight*10)/100; // 20% from top
+                endY   = (displayHeight*20)/100; // swipe 10% down
+                duration = 30;  // 5msec per interval
+                break;
+
+            case DRAG_LEFT_SIDE_UP_10PCT:
+                startX = (displayWidth*19)/100;  // 20% across screen
+                endX   = (displayWidth*20)/100;
+                startY = (displayHeight*90)/100; // 20% from top
+                endY   = (displayHeight*80)/100; // swipe 10% down
+                duration = 30;  // 5msec per interval
+                break;
+
+            case DRAG_LEFT_SIDE_DOWN_80PCT:
+                startX = (displayWidth*20)/100;  // 20% across screen
+                endX = startX + (displayWidth*10)/100;
+                startY = (displayHeight*10)/100; // 20% from top
+                endY   = (displayHeight*90)/100;
+                duration = 30;  // 5msec per interval
+                break;
+
+            case DRAG_LEFT_SIDE_UP_80PCT:
+                startX = (displayWidth*20)/100;  // 20% across screen
+                endX   = (displayWidth*30)/100;  // 30%
+                startY = (displayHeight*90)/100; // 90% from top
+                endY   = (displayHeight*10)/100; // 10% from top
+                duration = 30;  // 5msec per interval
+                break;
+
+            case DRAG_BOTTOM_RIGHT_80PCT:
+                startX = (displayWidth*20)/100;  // 20% across screen
+                endX   = (displayWidth*80)/100;  // 30%
+                startY = (displayHeight*80)/100; // 90% from top
+                endY   = (displayHeight*82)/100; // 10% from top
+                duration = 30;  // 5msec per interval
+                break;
+
+            case DRAG_BOTTOM_LEFT_80PCT:
+                startX = (displayWidth*80)/100;  // 20% across screen
+                endX   = (displayWidth*20)/100;  // 30%
+                startY = (displayHeight*82)/100; // 90% from top
+                endY   = (displayHeight*80)/100; // 10% from top
+                duration = 30;  // 5msec per interval
+                break;
+
+            case DRAG_BOTTOM_RIGHT_10PCT:
+                startX = (displayWidth*20)/100;  // 20% across screen
+                endX   = (displayWidth*30)/100;  // 30%
+                startY = (displayHeight*90)/100; // 90% from top
+                endY   = (displayHeight*91)/100; // 10% from top
+                duration = 30;  // 5msec per interval
+                break;
+
+            case DRAG_BOTTOM_LEFT_10PCT:
+                startX = (displayWidth*30)/100;  // 20% across screen
+                endX   = (displayWidth*20)/100;  // 30%
+                startY = (displayHeight*90)/100; // 90% from top
+                endY   = (displayHeight*91)/100; // 10% from top
+                duration = 30;  // 5msec per interval
+                break;
+
+        }
+
+        mDevice.drag(startX,startY,endX,endY,duration);
+
+    }
+
+    /**
      * Uses package manager to find the package name of the device launcher. Usually this package
      * is "com.android.launcher" but can be different at times. This is a generic solution which
      * works on all platforms.`
@@ -455,26 +735,28 @@ tests to do
 test landscape vs portrait
 
 normal stuff
-	adjust time scale
+	adjust time scale                      Done
 	adjust adjust viewing angle
-		slider
-		accelerometer
+		slider                             NOT DONE
+		accelerometer                      NOT DONE
 	adjust zoom scale
+	    slider                             DONE
+	    pinch                              NOT DONE
 	new origin
-		background
-		object
+		background                         NOT DONE
+		object                             NOT DONE
 
-	3d on/off
-	green on/off
-	accel on/off
-	grid on/off
+	3d on/off                              NOT DONE
+	green on/off                           NOT DONE
+	accel on/off                           NOT DONE
+	grid on/off                            NOT DONE
 
-	short slide (considered a tap)
+	short slide (considered a tap)         NOT DONE
 
-	menu - ovearll
-	menu - about
-	menu - object list
-	menu - settings
+	menu - ovearll                         Done
+	menu - about                           Done
+	menu - object list                     Done
+	menu - settings                        Done
 
 abnormal stuff
 	swipe in center
