@@ -215,6 +215,12 @@ public class UiAutomationTest {
         myCheckbox3.click();   // put it back to the original state
     }
 
+    /**
+     * Test the elapsed time display field by making sure the elapsed number of days changes after a brief delay.
+     *
+     * @throws UiObjectNotFoundException
+     * @throws InterruptedException
+     */
     @Test
     public void testElapsedTime() throws UiObjectNotFoundException, InterruptedException {
 
@@ -244,27 +250,61 @@ public class UiAutomationTest {
         assert(bounds.top < bounds.bottom);
     }
 
+    /**
+     * Test the simulation rate by making sure the accessibility field for it exists and that the simulation rate is non zero
+     * and that the computation interval is nonzero
+     *
+     * @throws UiObjectNotFoundException
+     * @throws InterruptedException
+     */
     @Test
-    public void testSimulationRate() throws UiObjectNotFoundException, InterruptedException {
+    public void testSimulationRate() throws UiObjectNotFoundException, InterruptedException
+    {
+        //
+        // validate the simulation rate field.
+        //
+        {
+            UiObject elapsedText = mDevice.findObject(new UiSelector()
+                    .descriptionContains("simulation rate"));
+            assertThat(elapsedText, notNullValue());
 
-        UiObject elapsedText = mDevice.findObject(new UiSelector()
-                .descriptionContains("simulation rate"));
-        assertThat(elapsedText, notNullValue());
+            Scanner scanner = new Scanner( elapsedText.getContentDescription() );
+            assertEquals( "simulation", scanner.next() );
+            assertEquals( "rate", scanner.next() );
+            float firstTime = scanner.nextFloat();
+            assertNotEquals( 0, firstTime, 0.000001 );
+            assertEquals( "days", scanner.next() );
+            assertEquals( "per", scanner.next() );
+            assertEquals( "second", scanner.next() );
 
-        Scanner scanner = new Scanner( elapsedText.getContentDescription() );
-        assertEquals( "simulation", scanner.next() );
-        assertEquals( "rate", scanner.next() );
-        float firstTime = scanner.nextFloat();
-        assertNotEquals( 0, firstTime );
-        assertEquals( "days", scanner.next() );
-        assertEquals( "per", scanner.next() );
-        assertEquals( "second", scanner.next() );
+            Rect bounds = elapsedText.getVisibleBounds();
+            assertNotEquals(0, bounds.left);
+            assert(bounds.left < bounds.right);
+            assertNotEquals(0, bounds.top);
+            assert(bounds.top < bounds.bottom);
+        }
 
-        Rect bounds = elapsedText.getVisibleBounds();
-        assertNotEquals(0, bounds.left);
-        assert(bounds.left < bounds.right);
-        assertNotEquals(0, bounds.top);
-        assert(bounds.top < bounds.bottom);
+        //
+        // validate the calculation interval field.
+        //
+        {
+            UiObject elapsedText = mDevice.findObject(new UiSelector()
+                    .descriptionContains("hours per iteration"));
+            assertThat(elapsedText, notNullValue());
+
+            Scanner scanner = new Scanner( elapsedText.getContentDescription() );
+            float rate = scanner.nextFloat();
+            assertEquals( 1.0, rate , 0.000001);
+            assertEquals( "hours", scanner.next() );
+            assertEquals( "per", scanner.next() );
+            assertEquals( "iteration", scanner.next() );
+
+            Rect bounds = elapsedText.getVisibleBounds();
+            assertNotEquals(0, bounds.left);
+            assert(bounds.left < bounds.right);
+            assertNotEquals(0, bounds.top);
+            assert(bounds.top < bounds.bottom);
+        }
     }
 
     //    @Test
