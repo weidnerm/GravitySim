@@ -988,16 +988,16 @@ public class Gravity extends Activity
             }
         }
 
-//        @Override
-//        public boolean dispatchHoverEvent(MotionEvent event) {
-//            // Always attempt to dispatch hover events to accessibility first.
-//            if (mGravityAccessHelper != null)
-//            {
-//                return mGravityAccessHelper.dispatchHoverEvent(event);
-//            }
-//
-//            return super.dispatchHoverEvent(event);
-//        }
+        @Override
+        public boolean dispatchHoverEvent(MotionEvent event) {
+            // Always attempt to dispatch hover events to accessibility first.
+            if (mGravityAccessHelper != null)
+            {
+                return mGravityAccessHelper.dispatchHoverEvent(event);
+            }
+
+            return super.dispatchHoverEvent(event);
+        }
 
 
 

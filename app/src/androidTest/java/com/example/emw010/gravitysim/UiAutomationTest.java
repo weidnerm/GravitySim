@@ -740,7 +740,7 @@ normal stuff
 		slider                             NOT DONE
 		accelerometer                      NOT DONE
 	adjust zoom scale
-	    slider                             DONE
+	    slider                             Done
 	    pinch                              NOT DONE
 	new origin
 		background                         NOT DONE
