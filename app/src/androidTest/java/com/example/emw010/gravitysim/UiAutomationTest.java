@@ -25,6 +25,7 @@ import android.support.test.uiautomator.*;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject2;
 import android.support.test.uiautomator.Until;
+import android.util.Log;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -603,59 +604,129 @@ public class UiAutomationTest {
 
         {
             // Disable accelerometer
-            Context appContext = InstrumentationRegistry.getTargetContext();
-            SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(appContext);
-            assertThat(mySharedPreferences, notNullValue());
-            if ( mySharedPreferences.getBoolean("enable_accel_tilt", true))
-            {
-                mySharedPreferences.edit().putBoolean("enable_accel_tilt", false).commit();  // force field off.
-            }
+            disableAccelerometer();
 
+            // get viewing angle
+            float viewingAngle = getViewingAngle();
 
-            // get scale bar legend text
-            UiObject angleText = mDevice.findObject(new UiSelector()
-                    .descriptionContains("viewing angle is"));
-            assertThat(angleText, notNullValue());
-
-            // validate angle legend text
-            Scanner legendScanner = new Scanner( angleText.getContentDescription() );
-            assertEquals( "viewing", legendScanner.next() );
-            assertEquals( "angle", legendScanner.next() );
-            assertEquals( "is", legendScanner.next() );
-            float viewingAngle = legendScanner.nextFloat();
-            assertEquals( "degrees", legendScanner.next() );
-
-
-
-
-            performDragEvent(DRAG_RIGHT_SIDE_DOWN_10PCT);
+            performDragEvent(DRAG_RIGHT_SIDE_DOWN_80PCT);
             Thread.sleep(500);
 
             // re-evaluate legend text
-            legendScanner = new Scanner( angleText.getContentDescription() );
-            assertEquals( "viewing", legendScanner.next() );
-            assertEquals( "angle", legendScanner.next() );
-            assertEquals( "is", legendScanner.next() );
-            float viewingAngle2 = legendScanner.nextFloat();
+            float viewingAngle2 = getViewingAngle();
             assertTrue( viewingAngle2<viewingAngle );
-            assertEquals( "degrees", legendScanner.next() );
 
-
-
-
-            performDragEvent(DRAG_RIGHT_SIDE_UP_10PCT);
+            performDragEvent(DRAG_RIGHT_SIDE_UP_80PCT);
             Thread.sleep(500);
 
             // re-re-evaluate legend text
-            legendScanner = new Scanner( angleText.getContentDescription() );
-            assertEquals( "viewing", legendScanner.next() );
-            assertEquals( "angle", legendScanner.next() );
-            assertEquals( "is", legendScanner.next() );
-            float viewingAngle3 = legendScanner.nextFloat();
+            float viewingAngle3 = getViewingAngle();
             assertTrue( viewingAngle2<viewingAngle3 );
-            assertEquals( "degrees", legendScanner.next() );
-
         }
+    }
+
+    @Test
+    public void setViewingAngleTo90() throws UiObjectNotFoundException, InterruptedException {
+        adjustViewingAngle(90);
+        float viewingAngle = getViewingAngle();
+        assertEquals(90, viewingAngle, 0.5 );
+    }
+
+    @Test
+    public void setViewingAngleTo0() throws UiObjectNotFoundException, InterruptedException {
+        adjustViewingAngle(0);
+        float viewingAngle = getViewingAngle();
+        assertEquals(0, viewingAngle, 0.5 );
+    }
+
+    private void adjustViewingAngle(double desiredAngle) throws InterruptedException, UiObjectNotFoundException {
+        disableAccelerometer();
+
+        // determine slider linearity
+        // get viewing angle
+        double degsPerLongSwipe = getDegsPerDown80Swipe();
+
+        // swipe till we are about a half a swipe away
+        setViewingAngleUsingCalibration(degsPerLongSwipe, desiredAngle-degsPerLongSwipe/2);
+
+        // swipe the last part.  makes sure we arent so close that a short swipe is treated as a tap
+        setViewingAngleUsingCalibration(degsPerLongSwipe, desiredAngle);
+
+    }
+
+    private void setViewingAngleUsingCalibration(double degsPerDown80Swipe, double desiredAngle ) throws UiObjectNotFoundException {
+        double  viewingAngle2 = getViewingAngle();
+
+        double distanceToDesired = desiredAngle - viewingAngle2;
+            Log.d("GravitySim", String.format("distanceToDesired=%1$f",distanceToDesired));
+
+        double numNeededDown80LongSwipes = distanceToDesired/degsPerDown80Swipe;
+            Log.d("GravitySim", String.format("numNeededDown80LongSwipes=%1$f",numNeededDown80LongSwipes));
+
+        int swipeEvent = numNeededDown80LongSwipes < 0 ? DRAG_RIGHT_SIDE_UP_80PCT : DRAG_RIGHT_SIDE_DOWN_80PCT;
+            Log.d("GravitySim", String.format("swipeEvent=%1$d",swipeEvent));
+//        Log.d("GravitySim", )
+
+        double numLongSwipes = Math.abs(numNeededDown80LongSwipes);
+            Log.d("GravitySim", String.format("numLongSwipes=%1$f",numLongSwipes));
+
+        // handle whole swipes
+        for(int index=0; index<Math.floor(numLongSwipes) ; index++)
+        {
+            performDragEventFraction(swipeEvent, 1.0);
+                Log.d("GravitySim", String.format("performDragEventFraction=%1$d frac=%2$f",swipeEvent, 1.0));
+        }
+        // handle remainder
+        performDragEventFraction(swipeEvent, numLongSwipes - Math.floor(numLongSwipes));
+            Log.d("GravitySim", String.format("performDragEventFraction=%1$d frac=%2$f",swipeEvent, numLongSwipes - Math.floor(numLongSwipes)));
+    }
+
+    private double getDegsPerDown80Swipe() throws InterruptedException, UiObjectNotFoundException {
+        float viewingAngle = getViewingAngle();
+
+        performDragEventFraction(DRAG_RIGHT_SIDE_DOWN_80PCT, 1.0);
+        Thread.sleep(500);
+
+        // re-evaluate legend text
+        double  viewingAngle2 = getViewingAngle();
+        assertTrue( viewingAngle2<viewingAngle );
+
+        Log.d("GravitySim", String.format("viewingAngle=%1$f",viewingAngle));
+        Log.d("GravitySim", String.format("viewingAngle2=%1$f",viewingAngle2));
+
+        double  degsPerLongSwipe = viewingAngle2-viewingAngle;
+        Log.d("GravitySim", String.format("degsPerLongSwipe=%1$f",degsPerLongSwipe));
+
+        return degsPerLongSwipe;
+
+    }
+
+    private void disableAccelerometer()
+    {
+        // Disable accelerometer
+        Context appContext = InstrumentationRegistry.getTargetContext();
+        SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(appContext);
+        assertThat(mySharedPreferences, notNullValue());
+        if ( mySharedPreferences.getBoolean("enable_accel_tilt", true))
+        {
+            mySharedPreferences.edit().putBoolean("enable_accel_tilt", false).commit();  // force field off.
+        }
+    }
+
+    private float getViewingAngle() throws UiObjectNotFoundException {
+        UiObject angleText = mDevice.findObject(new UiSelector()
+                .descriptionContains("viewing angle is"));
+        assertThat(angleText, notNullValue());
+
+        // validate angle legend text
+        Scanner legendScanner = new Scanner( angleText.getContentDescription() );
+        assertEquals( "viewing", legendScanner.next() );
+        assertEquals( "angle", legendScanner.next() );
+        assertEquals( "is", legendScanner.next() );
+        float viewingAngle = legendScanner.nextFloat();
+        assertEquals( "degrees", legendScanner.next() );
+
+        return viewingAngle;
     }
 
     private void assertDistanceScaleSmaller(float distScaleAU, float distScaleAU2, int barLengthPixels, int barLengthPixels2)
@@ -810,6 +881,36 @@ public class UiAutomationTest {
 
         mDevice.drag(startX,startY,endX,endY,duration);
 
+    }
+
+    private void performDragEventFraction(int type, double fraction)
+    {
+        int displayWidth = mDevice.getDisplayWidth();
+        int displayHeight = mDevice.getDisplayHeight();
+
+        int startX,endX ,startY,endY,duration;
+
+        switch(type)
+        {
+            default:
+            case DRAG_RIGHT_SIDE_DOWN_80PCT:
+                startX = (displayWidth * 80) / 100;  // 80% across screen
+                endX   = (displayWidth * 80) / 100;
+                startY = (displayHeight * 10) / 100; // 20% from top
+                endY   = startY + (int)((double)displayHeight*0.8*fraction);
+                duration = 100;  // 5msec per interval
+                break;
+
+            case DRAG_RIGHT_SIDE_UP_80PCT:
+                startX = (displayWidth * 80) / 100;  // 80% across screen
+                endX   = (displayWidth * 80) / 100;  // 90%
+                startY = (displayHeight * 90) / 100; // 90% from top
+                endY   = startY - (int)((double)displayHeight*0.8*fraction); // 10% from top
+                duration = 100;  // 5msec per interval
+                break;
+        }
+
+        mDevice.drag(startX,startY,endX,endY,duration);
     }
 
     /**
