@@ -22,6 +22,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.accessibility.AccessibilityNodeInfoCompat;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.*;
 import android.support.v4.widget.ExploreByTouchHelper;
 import android.view.accessibility.AccessibilityEvent;
@@ -251,6 +252,11 @@ public class Gravity extends Activity
         private Rect mDistanceScaleTextBounds = new Rect();
 
         private Rect mViewingAngleTextBounds = new Rect();
+
+        private Rect mGridLeftEdgeLeftEyeBounds = new Rect();
+        private Rect mGridLeftEdgeRightEyeBounds = new Rect();
+        private Rect mGridRightEdgeLeftEyeBounds = new Rect();
+        private Rect mGridRightEdgeRightEyeBounds = new Rect();
 
         /**
          * Custom view that is used to represent the gravity simulation graphical
@@ -536,42 +542,68 @@ public class Gravity extends Activity
             int steps = 2;
             double gridPosition;
 
-            if ( mSeeGrid == true )
-            {
-                for (gridPosition = -gridSize; gridPosition <= gridSize; gridPosition += gridSize / steps) {
-                    DisplayPointPair end_1 = translatePointForDisplay(gridPosition, -gridSize, 0);
-                    DisplayPointPair end_2 = translatePointForDisplay(gridPosition, gridSize, 0);
+            int left_x_1, left_y_1, left_x_2, left_y_2, right_x_1, right_y_1, right_x_2, right_y_2;
 
-                    canvas.drawLine(
-                            mDisplayOriginOffset.x + end_1.left_x,
-                            mDisplayOriginOffset.y + end_1.left_y,
-                            mDisplayOriginOffset.x + end_2.left_x,
-                            mDisplayOriginOffset.y + end_2.left_y, mLeft3DPaint);
-                    canvas.drawLine(
-                            mDisplayOriginOffset.x + end_1.right_x,
-                            mDisplayOriginOffset.y + end_1.right_y,
-                            mDisplayOriginOffset.x + end_2.right_x,
-                            mDisplayOriginOffset.y + end_2.right_y, mRight3DPaint);
 
+            boolean first = true;
+            for (gridPosition = -gridSize; gridPosition <= gridSize; gridPosition += gridSize / steps) {
+                DisplayPointPair end_1 = translatePointForDisplay(gridPosition, -gridSize, 0);
+                DisplayPointPair end_2 = translatePointForDisplay(gridPosition, gridSize, 0);
+
+                left_x_1 = mDisplayOriginOffset.x + end_1.left_x;
+                left_y_1 = mDisplayOriginOffset.y + end_1.left_y;
+                left_x_2 = mDisplayOriginOffset.x + end_2.left_x;
+                left_y_2 = mDisplayOriginOffset.y + end_2.left_y;
+                right_x_1 = mDisplayOriginOffset.x + end_1.right_x;
+                right_y_1 = mDisplayOriginOffset.y + end_1.right_y;
+                right_x_2 = mDisplayOriginOffset.x + end_2.right_x;
+                right_y_2 = mDisplayOriginOffset.y + end_2.right_y;
+
+                if ( mSeeGrid == true )
+                {
+                    canvas.drawLine(left_x_1,left_y_1,left_x_2,left_y_2, mLeft3DPaint);
+                    canvas.drawLine(right_x_1,right_y_1,right_x_2,right_y_2, mRight3DPaint);
                 }
-                for (gridPosition = -gridSize; gridPosition <= gridSize; gridPosition += gridSize / steps) {
-                    DisplayPointPair end_1 = translatePointForDisplay(-gridSize, gridPosition, 0);
-                    DisplayPointPair end_2 = translatePointForDisplay(gridSize, gridPosition, 0);
 
-                    canvas.drawLine(
-                            mDisplayOriginOffset.x + end_1.left_x,
-                            mDisplayOriginOffset.y + end_1.left_y,
-                            mDisplayOriginOffset.x + end_2.left_x,
-                            mDisplayOriginOffset.y + end_2.left_y, mLeft3DPaint);
-                    canvas.drawLine(
-                            mDisplayOriginOffset.x + end_1.right_x,
-                            mDisplayOriginOffset.y + end_1.right_y,
-                            mDisplayOriginOffset.x + end_2.right_x,
-                            mDisplayOriginOffset.y + end_2.right_y, mRight3DPaint);
+                if ( first == true ) {
+                    first = false;
+                    mGridLeftEdgeLeftEyeBounds.set(left_x_1,left_y_1,left_x_2,left_y_2);
+                    mGridLeftEdgeRightEyeBounds.set(right_x_1,right_y_1,right_x_2,right_y_2);
+                } else {
+                    mGridRightEdgeLeftEyeBounds.set(left_x_1,left_y_1,left_x_2,left_y_2);
+                    mGridRightEdgeRightEyeBounds.set(right_x_1,right_y_1,right_x_2,right_y_2);
+                }
+            }
+            mGridLeftEdgeLeftEyeBounds.sort();  // make sure left and right top and bottom are in right spots.
+            mGridLeftEdgeRightEyeBounds.sort();
+            mGridRightEdgeLeftEyeBounds.sort();  // make sure left and right top and bottom are in right spots.
+            mGridRightEdgeRightEyeBounds.sort();
 
+            if ( mGridLeftEdgeLeftEyeBounds.isEmpty() ) { mGridLeftEdgeLeftEyeBounds.right += 1; mGridLeftEdgeLeftEyeBounds.bottom += 1; }
+            if ( mGridLeftEdgeRightEyeBounds.isEmpty() ) { mGridLeftEdgeRightEyeBounds.right += 1; mGridLeftEdgeRightEyeBounds.bottom += 1; }
+            if ( mGridRightEdgeLeftEyeBounds.isEmpty() ) { mGridRightEdgeLeftEyeBounds.right += 1; mGridRightEdgeLeftEyeBounds.bottom += 1; }
+            if ( mGridRightEdgeRightEyeBounds.isEmpty() ) { mGridRightEdgeRightEyeBounds.right += 1; mGridRightEdgeRightEyeBounds.bottom += 1; }
+
+            for (gridPosition = -gridSize; gridPosition <= gridSize; gridPosition += gridSize / steps) {
+                DisplayPointPair end_1 = translatePointForDisplay(-gridSize, gridPosition, 0);
+                DisplayPointPair end_2 = translatePointForDisplay(gridSize, gridPosition, 0);
+
+                left_x_1 = mDisplayOriginOffset.x + end_1.left_x;
+                left_y_1 = mDisplayOriginOffset.y + end_1.left_y;
+                left_x_2 = mDisplayOriginOffset.x + end_2.left_x;
+                left_y_2 = mDisplayOriginOffset.y + end_2.left_y;
+                right_x_1 = mDisplayOriginOffset.x + end_1.right_x;
+                right_y_1 = mDisplayOriginOffset.y + end_1.right_y;
+                right_x_2 = mDisplayOriginOffset.x + end_2.right_x;
+                right_y_2 = mDisplayOriginOffset.y + end_2.right_y;
+
+                if ( mSeeGrid == true ) {
+                    canvas.drawLine(left_x_1, left_y_1, left_x_2, left_y_2, mLeft3DPaint);
+                    canvas.drawLine(right_x_1, right_y_1, right_x_2, right_y_2, mRight3DPaint);
                 }
 
             }
+
         }
 
         /**
@@ -1091,6 +1123,10 @@ public class Gravity extends Activity
                     else if (mDistanceScaleBarBounds.contains((int)x,(int)y))    return VIRTUAL_VIEW_ID_DIST_SCALE_BAR;
                     else if (mDistanceScaleTextBounds.contains((int)x,(int)y))   return VIRTUAL_VIEW_ID_DIST_SCALE_TEXT;
                     else if (mViewingAngleTextBounds.contains((int)x,(int)y))    return VIRTUAL_VIEW_ID_VIEWING_ANGLE;
+                    else if (mGridLeftEdgeLeftEyeBounds.contains((int)x,(int)y))     return VIRTUAL_VIEW_ID_VERT1_GRID_LEYE;
+                    else if (mGridLeftEdgeRightEyeBounds.contains((int)x,(int)y))    return VIRTUAL_VIEW_ID_VERT1_GRID_REYE;
+                    else if (mGridRightEdgeRightEyeBounds.contains((int)x,(int)y))   return VIRTUAL_VIEW_ID_VERT5_GRID_REYE;
+                    else if (mGridRightEdgeLeftEyeBounds.contains((int)x,(int)y))    return VIRTUAL_VIEW_ID_VERT5_GRID_LEYE;
                     else return ExploreByTouchHelper.HOST_ID;
                 }
             }
@@ -1109,21 +1145,21 @@ public class Gravity extends Activity
 //                virtualViewIds.add(40); // 40	hours per calc slider
 //                virtualViewIds.add(50); // 50	viewing angle slider
 //                virtualViewIds.add(60); // 60	distance scale slider
-//                virtualViewIds.add(70); // 70	first vert gridline lefteye
+                virtualViewIds.add(VIRTUAL_VIEW_ID_VERT1_GRID_LEYE); // 70	first vert gridline lefteye
 //                virtualViewIds.add(71); // ..
 //                virtualViewIds.add(72); // ..
 //                virtualViewIds.add(73); // ..
-//                virtualViewIds.add(74); // 74	last vert gridline lefteye
+                virtualViewIds.add(VIRTUAL_VIEW_ID_VERT5_GRID_LEYE); // 74	last vert gridline lefteye
 //                virtualViewIds.add(75); // 75	first horiz gridline lefteye
 //                virtualViewIds.add(76); // ..
 //                virtualViewIds.add(77); // ..
 //                virtualViewIds.add(78); // ..
 //                virtualViewIds.add(79); // 79	last horiz gridline lefteye
-//                virtualViewIds.add(80); // 80	first vert gridline righteye
+                virtualViewIds.add(VIRTUAL_VIEW_ID_VERT1_GRID_REYE); // 80	first vert gridline righteye
 //                virtualViewIds.add(81); // ..
 //                virtualViewIds.add(82); // ..
 //                virtualViewIds.add(83); // ..
-//                virtualViewIds.add(84); // 84	last vert gridline righteye
+                virtualViewIds.add(VIRTUAL_VIEW_ID_VERT5_GRID_REYE); // 84	last vert gridline righteye
 //                virtualViewIds.add(85); // 85	first horiz gridline righteye
 //                virtualViewIds.add(86); // ..
 //                virtualViewIds.add(87); // ..
@@ -1158,6 +1194,18 @@ public class Gravity extends Activity
                         break;
                     case VIRTUAL_VIEW_ID_VIEWING_ANGLE:
                         returnVal = getContext().getString(R.string.desc_viewing_angle, mViewingAngle);
+                        break;
+                    case VIRTUAL_VIEW_ID_VERT1_GRID_LEYE:
+                        returnVal = getContext().getString(R.string.desc_gridline, "left", "left", mSeeGrid ? "visible": "hidden");
+                        break;
+                    case VIRTUAL_VIEW_ID_VERT5_GRID_LEYE:
+                        returnVal = getContext().getString(R.string.desc_gridline, "right", "left", mSeeGrid ? "visible": "hidden");
+                        break;
+                    case VIRTUAL_VIEW_ID_VERT1_GRID_REYE:
+                        returnVal = getContext().getString(R.string.desc_gridline, "left", "right", mSeeGrid ? "visible": "hidden");
+                        break;
+                    case VIRTUAL_VIEW_ID_VERT5_GRID_REYE:
+                        returnVal = getContext().getString(R.string.desc_gridline, "right", "right", mSeeGrid ? "visible": "hidden");
                         break;
                     default:
                         returnVal = getContext().getString(R.string.desc_unknown_field);
@@ -1212,6 +1260,18 @@ public class Gravity extends Activity
                         break;
                     case VIRTUAL_VIEW_ID_VIEWING_ANGLE:
                         returnVal = mViewingAngleTextBounds;
+                        break;
+                    case VIRTUAL_VIEW_ID_VERT1_GRID_LEYE:
+                        returnVal = mGridLeftEdgeLeftEyeBounds;
+                        break;
+                    case VIRTUAL_VIEW_ID_VERT5_GRID_LEYE:
+                        returnVal = mGridRightEdgeLeftEyeBounds;
+                        break;
+                    case VIRTUAL_VIEW_ID_VERT1_GRID_REYE:
+                        returnVal = mGridLeftEdgeRightEyeBounds;
+                        break;
+                    case VIRTUAL_VIEW_ID_VERT5_GRID_REYE:
+                        returnVal = mGridRightEdgeRightEyeBounds;
                         break;
                     default:
                         returnVal = new Rect(0,0,0,0);

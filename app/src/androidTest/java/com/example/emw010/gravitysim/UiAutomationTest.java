@@ -604,7 +604,7 @@ public class UiAutomationTest {
 
         {
             // Disable accelerometer
-            disableAccelerometer();
+            setAccelerometerEnableState(false);
 
             // get viewing angle
             float viewingAngle = getViewingAngle();
@@ -625,22 +625,147 @@ public class UiAutomationTest {
         }
     }
 
+
     @Test
-    public void setViewingAngleTo90() throws UiObjectNotFoundException, InterruptedException {
+    public void test_Grid_at_90degs() throws UiObjectNotFoundException, InterruptedException {
         adjustViewingAngle(90);
         float viewingAngle = getViewingAngle();
         assertEquals(90, viewingAngle, 0.5 );
+
+        //
+        // test grid off in 2d
+        //
+        set3dEnableState(false);
+        setGridEnableState(false);
+        Thread.sleep(500);
+        assertGridLineTall("left grid left", "hidden");
+        assertGridLineTall("left grid right", "hidden");
+        assertGridLineTall("right grid left", "hidden");
+        assertGridLineTall("right grid right", "hidden");
+
+
+        //
+        // test grid on in 2d
+        //
+        set3dEnableState(false);
+        setGridEnableState(true);
+        Thread.sleep(500);
+        assertGridLineTall("left grid left", "visible");
+        assertGridLineTall("left grid right", "visible");
+        assertGridLineTall("right grid left", "visible");
+        assertGridLineTall("right grid right", "visible");
+
+        //
+        // test grid off in 3d
+        //
+        set3dEnableState(true);
+        setGridEnableState(false);
+        Thread.sleep(500);
+        assertGridLineTall("left grid left", "hidden");
+        assertGridLineTall("left grid right", "hidden");
+        assertGridLineTall("right grid left", "hidden");
+        assertGridLineTall("right grid right", "hidden");
+
+        //
+        // test grid on in 3d
+        //
+        set3dEnableState(true);
+        setGridEnableState(true);
+        Thread.sleep(500);
+        assertGridLineTall("left grid left", "visible");
+        assertGridLineTall("left grid right", "visible");
+        assertGridLineTall("right grid left", "visible");
+        assertGridLineTall("right grid right", "visible");
     }
 
     @Test
-    public void setViewingAngleTo0() throws UiObjectNotFoundException, InterruptedException {
+    public void test_Grid_at_0degs() throws UiObjectNotFoundException, InterruptedException {
         adjustViewingAngle(0);
         float viewingAngle = getViewingAngle();
         assertEquals(0, viewingAngle, 0.5 );
+
+        //
+        // test grid off in 2d
+        //
+        set3dEnableState(false);
+        setGridEnableState(false);
+        Thread.sleep(500);
+        assertGridLineFlat("left grid left", "hidden");
+        assertGridLineFlat("left grid right", "hidden");
+        assertGridLineFlat("right grid left", "hidden");
+        assertGridLineFlat("right grid right", "hidden");
+
+
+        //
+        // test grid on in 2d
+        //
+        set3dEnableState(false);
+        setGridEnableState(true);
+        Thread.sleep(500);
+        assertGridLineFlat("left grid left", "visible");
+        assertGridLineFlat("left grid right", "visible");
+        assertGridLineFlat("right grid left", "visible");
+        assertGridLineFlat("right grid right", "visible");
+
+        //
+        // test grid off in 3d
+        //
+        set3dEnableState(true);
+        setGridEnableState(false);
+        Thread.sleep(500);
+        assertGridLineFlat("left grid left", "hidden");
+        assertGridLineFlat("left grid right", "hidden");
+        assertGridLineFlat("right grid left", "hidden");
+        assertGridLineFlat("right grid right", "hidden");
+
+        //
+        // test grid on in 3d
+        //
+        set3dEnableState(true);
+        setGridEnableState(true);
+        Thread.sleep(500);
+        assertGridLineFlat("left grid left", "visible");
+        assertGridLineFlat("left grid right", "visible");
+        assertGridLineFlat("right grid left", "visible");
+        assertGridLineFlat("right grid right", "visible");
+    }
+
+
+    private void assertGridLineTall(String identifier, String state) throws UiObjectNotFoundException {
+        UiObject gridLine = mDevice.findObject(new UiSelector()
+                .descriptionContains(identifier));
+        assertThat(gridLine, notNullValue());
+
+        // validate angle legend text
+        Scanner legendScanner = new Scanner( gridLine.getContentDescription() );
+        legendScanner.next();  // left/right
+        assertEquals( "grid", legendScanner.next() );
+        legendScanner.next();  // left/right
+        assertEquals( "eye", legendScanner.next() );
+        assertEquals( state, legendScanner.next() );
+
+        Rect gridBounds = gridLine.getVisibleBounds();
+        assertTrue(gridBounds.width()*2 < gridBounds.height());
+    }
+    private void assertGridLineFlat(String identifier, String state) throws UiObjectNotFoundException {
+        UiObject gridLine = mDevice.findObject(new UiSelector()
+                .descriptionContains(identifier));
+        assertThat(gridLine, notNullValue());
+
+        // validate angle legend text
+        Scanner legendScanner = new Scanner( gridLine.getContentDescription() );
+        legendScanner.next();  // left/right
+        assertEquals( "grid", legendScanner.next() );
+        legendScanner.next();  // left/right
+        assertEquals( "eye", legendScanner.next() );
+        assertEquals( state, legendScanner.next() );
+
+        Rect gridBounds = gridLine.getVisibleBounds();
+        assertTrue(gridBounds.height()*2 < gridBounds.width());
     }
 
     private void adjustViewingAngle(double desiredAngle) throws InterruptedException, UiObjectNotFoundException {
-        disableAccelerometer();
+        setAccelerometerEnableState(false);
 
         // determine slider linearity
         // get viewing angle
@@ -658,27 +783,20 @@ public class UiAutomationTest {
         double  viewingAngle2 = getViewingAngle();
 
         double distanceToDesired = desiredAngle - viewingAngle2;
-            Log.d("GravitySim", String.format("distanceToDesired=%1$f",distanceToDesired));
 
         double numNeededDown80LongSwipes = distanceToDesired/degsPerDown80Swipe;
-            Log.d("GravitySim", String.format("numNeededDown80LongSwipes=%1$f",numNeededDown80LongSwipes));
 
         int swipeEvent = numNeededDown80LongSwipes < 0 ? DRAG_RIGHT_SIDE_UP_80PCT : DRAG_RIGHT_SIDE_DOWN_80PCT;
-            Log.d("GravitySim", String.format("swipeEvent=%1$d",swipeEvent));
-//        Log.d("GravitySim", )
 
         double numLongSwipes = Math.abs(numNeededDown80LongSwipes);
-            Log.d("GravitySim", String.format("numLongSwipes=%1$f",numLongSwipes));
 
         // handle whole swipes
         for(int index=0; index<Math.floor(numLongSwipes) ; index++)
         {
             performDragEventFraction(swipeEvent, 1.0);
-                Log.d("GravitySim", String.format("performDragEventFraction=%1$d frac=%2$f",swipeEvent, 1.0));
         }
         // handle remainder
         performDragEventFraction(swipeEvent, numLongSwipes - Math.floor(numLongSwipes));
-            Log.d("GravitySim", String.format("performDragEventFraction=%1$d frac=%2$f",swipeEvent, numLongSwipes - Math.floor(numLongSwipes)));
     }
 
     private double getDegsPerDown80Swipe() throws InterruptedException, UiObjectNotFoundException {
@@ -691,26 +809,40 @@ public class UiAutomationTest {
         double  viewingAngle2 = getViewingAngle();
         assertTrue( viewingAngle2<viewingAngle );
 
-        Log.d("GravitySim", String.format("viewingAngle=%1$f",viewingAngle));
-        Log.d("GravitySim", String.format("viewingAngle2=%1$f",viewingAngle2));
-
         double  degsPerLongSwipe = viewingAngle2-viewingAngle;
-        Log.d("GravitySim", String.format("degsPerLongSwipe=%1$f",degsPerLongSwipe));
 
         return degsPerLongSwipe;
 
     }
 
-    private void disableAccelerometer()
+    private void setAccelerometerEnableState(boolean desiredState)
     {
         // Disable accelerometer
         Context appContext = InstrumentationRegistry.getTargetContext();
         SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(appContext);
         assertThat(mySharedPreferences, notNullValue());
-        if ( mySharedPreferences.getBoolean("enable_accel_tilt", true))
-        {
-            mySharedPreferences.edit().putBoolean("enable_accel_tilt", false).commit();  // force field off.
-        }
+
+        mySharedPreferences.edit().putBoolean("enable_accel_tilt", desiredState).commit();
+    }
+
+    private void set3dEnableState(boolean desiredState)
+    {
+        // Disable accelerometer
+        Context appContext = InstrumentationRegistry.getTargetContext();
+        SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(appContext);
+        assertThat(mySharedPreferences, notNullValue());
+
+        mySharedPreferences.edit().putBoolean("enable_3d", desiredState).commit();
+    }
+
+    private void setGridEnableState(boolean desiredState)
+    {
+        // Disable accelerometer
+        Context appContext = InstrumentationRegistry.getTargetContext();
+        SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(appContext);
+        assertThat(mySharedPreferences, notNullValue());
+
+        mySharedPreferences.edit().putBoolean("see_grid", desiredState).commit();
     }
 
     private float getViewingAngle() throws UiObjectNotFoundException {
